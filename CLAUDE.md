@@ -47,6 +47,10 @@ Clean-room HRMS: React + Vite + TypeScript frontend, Node + Express + TypeScript
 - Follow the design foundation from the UI/UX tickets (tokens, component library, app shell). Do not invent per-screen styles. Every data screen needs loading, empty, and error states, keyboard access, and a phone-width layout.
 - Server state via TanStack Query; no secrets in the bundle; only `VITE_*` env vars.
 
+## Keep the plan and the sprint board in sync
+- `docs/07-sprint-execution.md` is the source of truth for tickets. Any PR that changes a ticket's status, scope or "Done when" updates it in the same PR.
+- The sprint board artifact (https://claude.ai/artifact/R9Dw37EP8qESKanRNx6Hjg) mirrors `docs/07`. Republish it to the same URL after each ticket merges to `dev` and at each sprint release, and tell the user what changed. Its source HTML is not in the repo; if it is missing, read the artifact and rebuild from it.
+
 ## How to report
 End each task with: what changed (files), what you ran and the result, what is not done, and the branch/PR state. Reference files as `path:line`. If tests fail, show the failure, not a summary.
 
