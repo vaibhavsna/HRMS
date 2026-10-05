@@ -17,6 +17,8 @@ Read the docs in order:
 8. [docs/07-sprint-execution.md](./docs/07-sprint-execution.md) — sprint-by-sprint tickets: what to do and how
 9. [docs/08-engineering-guardrails.md](./docs/08-engineering-guardrails.md) — branching, protection, and stability rules
 
+10. [docs/10-github-workflow.md](./docs/10-github-workflow.md) — GitHub Issues, Project board, PR linking, releases
+
 Working with Claude: rules are in [CLAUDE.md](./CLAUDE.md), with tool-level safety denies in `.claude/settings.json`.
 
 ## Status

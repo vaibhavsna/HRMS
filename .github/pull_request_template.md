@@ -1,5 +1,6 @@
-## Ticket
-<!-- e.g. S1-2 — link to the row in docs/07-sprint-execution.md -->
+## Linked issue
+<!-- Required. Use "Closes #123" so merging closes the ticket. Release PRs list every issue in the sprint. -->
+Closes #
 
 ## What and why
 
@@ -12,7 +13,8 @@
 
 ## Checklist
 - [ ] Targets `dev` (or `main` for a release/hotfix PR only)
-- [ ] One ticket, branch named `feature/<sprint>-<name>`
+- [ ] One issue, branch named `feature/<sprint>-<name>`
+- [ ] Every "Done when" item on the issue is met
 - [ ] Lint, typecheck, tests pass
 - [ ] Tests added for new logic / bug fix
 - [ ] Docs updated (schema, API, sprint doc) if behaviour changed

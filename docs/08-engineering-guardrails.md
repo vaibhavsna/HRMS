@@ -40,7 +40,7 @@ Note: branch protection on private repos needs a paid GitHub plan. If unavailabl
 
 ## 4. Pull request rules
 
-- Title: `[S1-2] feat: login endpoint`. One ticket per PR, ideally under 400 changed lines.
+- Title: `[S1-2] feat: login endpoint`. One ticket per PR, ideally under 400 changed lines. The body links its issue with `Closes #<n>` (see [10-github-workflow.md](./10-github-workflow.md)).
 - The PR template ([.github/pull_request_template.md](../.github/pull_request_template.md)) must be filled in: what, why, how tested, risks, docs updated.
 - CI runs install, lint, typecheck, test, and `prisma migrate diff`. Red CI blocks merge, no exceptions.
 - Claude reviews every PR automatically and comments on correctness, security, data-loss risk, and missing tests. Fix or reply to every comment.
