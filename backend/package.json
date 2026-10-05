@@ -1,0 +1,10 @@
+{
+  "name": "@hrms-platform/backend",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Express REST API for hrms-platform. See ../docs for architecture and API spec.",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "echo \"backend not yet implemented - see ../docs/05-roadmap.md\" && exit 1"
+  }
+}

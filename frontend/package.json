@@ -1,0 +1,9 @@
+{
+  "name": "@hrms-platform/frontend",
+  "private": true,
+  "version": "0.0.0",
+  "description": "React + Vite SPA for hrms-platform. See ../docs for architecture and API spec.",
+  "scripts": {
+    "dev": "echo \"frontend not yet implemented - see ../docs/05-roadmap.md\" && exit 1"
+  }
+}
