@@ -5,6 +5,22 @@
   "description": "Express REST API for hrms-platform. See ../docs for architecture and API spec.",
   "main": "src/index.ts",
   "scripts": {
-    "dev": "echo \"backend not yet implemented - see ../docs/05-roadmap.md\" && exit 1"
+    "dev": "echo \"backend not yet implemented - see ../docs/05-roadmap.md\" && exit 1",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:deploy": "prisma migrate deploy",
+    "prisma:studio": "prisma studio"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.10.0",
+    "@prisma/client": "^7.10.0",
+    "dotenv": "^18.0.5",
+    "pg": "^8.23.1"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.1",
+    "@types/pg": "^8.23.1",
+    "prisma": "^7.10.0",
+    "tsx": "^4.23.15"
   }
 }

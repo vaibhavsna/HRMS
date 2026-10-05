@@ -1,0 +1,237 @@
+// Phase 1 schema, mirrors docs/02-database-schema.md.
+// Conventions: UUID ids, created_at/updated_at/deleted_at on every table (soft delete),
+// snake_case in the database, camelCase in the client.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum EmploymentStatus {
+  active
+  on_leave
+  terminated
+
+  @@map("employment_status")
+}
+
+enum LeaveRequestStatus {
+  pending
+  approved
+  rejected
+  cancelled
+
+  @@map("leave_request_status")
+}
+
+model User {
+  id           String    @id @default(uuid()) @db.Uuid
+  email        String    @unique
+  passwordHash String    @map("password_hash")
+  isActive     Boolean   @default(true) @map("is_active")
+  lastLoginAt  DateTime? @map("last_login_at") @db.Timestamptz
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt    DateTime? @map("deleted_at") @db.Timestamptz
+
+  employee Employee?
+  roles    UserRole[]
+
+  @@map("users")
+}
+
+model Role {
+  id          String    @id @default(uuid()) @db.Uuid
+  name        String    @unique
+  description String
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt   DateTime? @map("deleted_at") @db.Timestamptz
+
+  users       UserRole[]
+  permissions RolePermission[]
+
+  @@map("roles")
+}
+
+model Permission {
+  id        String    @id @default(uuid()) @db.Uuid
+  resource  String
+  action    String
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz
+
+  roles RolePermission[]
+
+  @@unique([resource, action])
+  @@map("permissions")
+}
+
+model RolePermission {
+  id           String    @id @default(uuid()) @db.Uuid
+  roleId       String    @map("role_id") @db.Uuid
+  permissionId String    @map("permission_id") @db.Uuid
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt    DateTime? @map("deleted_at") @db.Timestamptz
+
+  role       Role       @relation(fields: [roleId], references: [id])
+  permission Permission @relation(fields: [permissionId], references: [id])
+
+  @@unique([roleId, permissionId])
+  @@index([roleId])
+  @@map("role_permissions")
+}
+
+model UserRole {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  roleId    String    @map("role_id") @db.Uuid
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id])
+  role Role @relation(fields: [roleId], references: [id])
+
+  @@unique([userId, roleId])
+  @@index([userId])
+  @@map("user_roles")
+}
+
+model Department {
+  id                 String    @id @default(uuid()) @db.Uuid
+  name               String
+  description        String?
+  parentDepartmentId String?   @map("parent_department_id") @db.Uuid
+  createdAt          DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt          DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt          DateTime? @map("deleted_at") @db.Timestamptz
+
+  parent       Department?   @relation("DepartmentHierarchy", fields: [parentDepartmentId], references: [id])
+  children     Department[]  @relation("DepartmentHierarchy")
+  employees    Employee[]
+  jobPositions JobPosition[]
+
+  @@index([parentDepartmentId])
+  @@map("departments")
+}
+
+model JobPosition {
+  id           String    @id @default(uuid()) @db.Uuid
+  title        String
+  departmentId String    @map("department_id") @db.Uuid
+  description  String?
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt    DateTime? @map("deleted_at") @db.Timestamptz
+
+  department Department @relation(fields: [departmentId], references: [id])
+  employees  Employee[]
+
+  @@index([departmentId])
+  @@map("job_positions")
+}
+
+model Employee {
+  id               String           @id @default(uuid()) @db.Uuid
+  userId           String           @unique @map("user_id") @db.Uuid
+  employeeCode     String           @unique @map("employee_code")
+  firstName        String           @map("first_name")
+  lastName         String           @map("last_name")
+  workEmail        String           @unique @map("work_email")
+  phone            String?
+  dateOfBirth      DateTime?        @map("date_of_birth") @db.Date
+  gender           String?
+  address          String?
+  departmentId     String?          @map("department_id") @db.Uuid
+  jobPositionId    String?          @map("job_position_id") @db.Uuid
+  managerId        String?          @map("manager_id") @db.Uuid
+  dateJoined       DateTime         @map("date_joined") @db.Date
+  employmentStatus EmploymentStatus @default(active) @map("employment_status")
+  createdAt        DateTime         @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt        DateTime         @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt        DateTime?        @map("deleted_at") @db.Timestamptz
+
+  user        User         @relation(fields: [userId], references: [id])
+  department  Department?  @relation(fields: [departmentId], references: [id])
+  jobPosition JobPosition? @relation(fields: [jobPositionId], references: [id])
+  manager     Employee?    @relation("ManagerReports", fields: [managerId], references: [id])
+  reports     Employee[]   @relation("ManagerReports")
+
+  leaveRequests         LeaveRequest[] @relation("LeaveRequester")
+  approvedLeaveRequests LeaveRequest[] @relation("LeaveApprover")
+  leaveBalances         LeaveBalance[]
+
+  @@index([departmentId])
+  @@index([jobPositionId])
+  @@index([managerId])
+  @@map("employees")
+}
+
+model LeaveType {
+  id                  String    @id @default(uuid()) @db.Uuid
+  name                String
+  defaultDaysPerYear  Int       @map("default_days_per_year")
+  isPaid              Boolean   @map("is_paid")
+  requiresApproval    Boolean   @map("requires_approval")
+  carryForwardAllowed Boolean   @map("carry_forward_allowed")
+  createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt           DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt           DateTime? @map("deleted_at") @db.Timestamptz
+
+  leaveRequests LeaveRequest[]
+  leaveBalances LeaveBalance[]
+
+  @@map("leave_types")
+}
+
+model LeaveRequest {
+  id              String             @id @default(uuid()) @db.Uuid
+  employeeId      String             @map("employee_id") @db.Uuid
+  leaveTypeId     String             @map("leave_type_id") @db.Uuid
+  startDate       DateTime           @map("start_date") @db.Date
+  endDate         DateTime           @map("end_date") @db.Date
+  halfDay         Boolean            @default(false) @map("half_day")
+  reason          String?
+  status          LeaveRequestStatus @default(pending)
+  approverId      String?            @map("approver_id") @db.Uuid
+  approvedAt      DateTime?          @map("approved_at") @db.Timestamptz
+  rejectionReason String?            @map("rejection_reason")
+  createdAt       DateTime           @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime           @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt       DateTime?          @map("deleted_at") @db.Timestamptz
+
+  employee  Employee  @relation("LeaveRequester", fields: [employeeId], references: [id])
+  leaveType LeaveType @relation(fields: [leaveTypeId], references: [id])
+  approver  Employee? @relation("LeaveApprover", fields: [approverId], references: [id])
+
+  @@index([employeeId])
+  @@index([status])
+  @@index([approverId])
+  @@map("leave_requests")
+}
+
+model LeaveBalance {
+  id                 String    @id @default(uuid()) @db.Uuid
+  employeeId         String    @map("employee_id") @db.Uuid
+  leaveTypeId        String    @map("leave_type_id") @db.Uuid
+  year               Int
+  allocatedDays      Decimal   @default(0) @map("allocated_days") @db.Decimal(6, 2)
+  usedDays           Decimal   @default(0) @map("used_days") @db.Decimal(6, 2)
+  carriedForwardDays Decimal   @default(0) @map("carried_forward_days") @db.Decimal(6, 2)
+  createdAt          DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt          DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt          DateTime? @map("deleted_at") @db.Timestamptz
+
+  employee  Employee  @relation(fields: [employeeId], references: [id])
+  leaveType LeaveType @relation(fields: [leaveTypeId], references: [id])
+
+  @@unique([employeeId, leaveTypeId, year])
+  @@map("leave_balances")
+}
