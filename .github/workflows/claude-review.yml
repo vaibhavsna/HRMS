@@ -1,0 +1,74 @@
+name: claude-review
+
+# Reviews every PR into dev or main against docs/12-coding-standards.md.
+# Model choice follows docs/13-model-selection.md section 5:
+#   - release PRs (dev -> main) and PRs touching migrations, auth, RBAC or middleware: Opus 5.5
+#   - everything else: Sonnet 5.5
+# Needs the repository secret ANTHROPIC_API_KEY. Runs are skipped for fork PRs (no secrets there).
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches: [dev, main]
+
+concurrency:
+  group: claude-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  review:
+    if: ${{ github.event.pull_request.draft == false && github.event.pull_request.head.repo.full_name == github.repository }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Choose model
+        id: model
+        env:
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          model="claude-sonnet-5-5"
+          if [ "$BASE_REF" = "main" ] && [ "$HEAD_REF" = "dev" ]; then
+            model="claude-opus-5-5"
+          elif git diff --name-only "$BASE_SHA"...HEAD | grep -E '^(backend/prisma/migrations/|backend/src/modules/auth/|backend/src/middleware/)'; then
+            model="claude-opus-5-5"
+          fi
+          echo "model=$model" >> "$GITHUB_OUTPUT"
+          echo "Using $model"
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_args: '--model ${{ steps.model.outputs.model }} --max-turns 12'
+          prompt: |
+            Review pull request #${{ github.event.pull_request.number }} in ${{ github.repository }}.
+
+            Read CLAUDE.md, docs/12-coding-standards.md (section 12 is the review checklist),
+            the linked issue's "Done when", and the specs in docs/02 and docs/03.
+
+            Review in this order and stop at the first serious class of finding:
+            1. Correctness against the ticket and the specs.
+            2. Security: validation at boundaries, RBAC and data scoping in services, secrets or PII in logs, new dependencies.
+            3. Data safety: append-only migrations, soft delete, transactions, Decimal and date-only types.
+            4. Tests: new logic and bug fixes covered, no weakened or skipped tests.
+            5. Layering and naming, then frontend states and accessibility.
+            Do not comment on formatting or lint issues; CI covers those.
+
+            Each finding must name the file and line, say what breaks, and how to fix it.
+            Post inline comments for findings and one summary comment with a verdict:
+            approve, or changes requested with the blocking items listed.
+            If the PR body has no "Closes #<issue>" line, say so.
