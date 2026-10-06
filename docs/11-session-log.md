@@ -2,7 +2,7 @@
 
 Everything done so far on the hrms-platform migration, from the first prompt to the current state, merged from five Claude Code sessions on 2026-10-05. Times are given as order only; the sessions overlapped.
 
-Sessions 1–4 are reconstructed from the saved transcripts. Session 5 is the current one. Two older sessions from 2026-09-23 belong to a different project (GatewayOps) and are not included.
+Sessions 1–4 are reconstructed from the saved transcripts. Session 5 is the current one. Two older sessions from 2026-09-23 belong to an unrelated project and are not included.
 
 ## At a glance
 
@@ -37,7 +37,7 @@ Prompt: "I am working on migrating project from… create a doc around it in sim
 Prompt: which model for such work, how to divide it, plan first then "grill me", and keep agents from clashing. Answers: existing repo, model per role, interview-style grilling, split by file/directory ownership. A plan file was written but this was not carried further.
 
 ### Session 4 — running Horilla locally (side task)
-Cloned Horilla separately to `C:\Users\ATM\horilla-hr-2` to see it run. Installed Python 3.13 and the Visual C++ runtime, created a venv, installed requirements, set up a SQLite `.env`. **Blocked:** Windows Application Control blocks spaCy's compiled files, so Django cannot start. Options offered: turn off Smart App Control, run in Docker/WSL2 (recommended), or make the spaCy import lazy. No answer recorded; unresolved.
+Cloned Horilla separately, outside this repo, to see it run. Installed Python 3.13 and the Visual C++ runtime, created a venv, installed requirements, set up a SQLite `.env`. **Blocked:** Windows Application Control blocks spaCy's compiled files, so Django cannot start. Options offered: turn off Smart App Control, run in Docker/WSL2 (recommended), or make the spaCy import lazy. No answer recorded; unresolved.
 
 ### Session 5 — this session: readiness, process, and Sprint 0 start
 
@@ -74,7 +74,6 @@ Cloned Horilla separately to `C:\Users\ATM\horilla-hr-2` to see it run. Installe
 - Prisma's `latest` tag is an 8.0 release candidate, so **7.10.0** (last stable) is used. Prisma 7 needs `prisma.config.ts`, and the client is generated into `backend/src/generated` (gitignored).
 - Prettier is scoped to code only; it would otherwise reformat all the Markdown tables.
 - The `.claude/settings.json` deny rules worked: a command that touched `.env` was blocked.
-- Other Docker containers from another project (`gatewayops-*`) exist on this machine; they are stopped and do not use port 5432.
 
 ## Branch map (local only, none pushed except `main` and `dev`)
 
@@ -121,4 +120,4 @@ Later branches build on earlier ones, so PRs must merge in order: root-tooling, 
 ## Where things are
 
 - Specs: `docs/00`–`06`. Plan: `docs/07`. Rules: `docs/08`, `CLAUDE.md`. GitHub process: `docs/10`. This log: `docs/11`. Coding standards: `docs/12`. Model selection and agent split: `docs/13`.
-- Raw transcripts (local): `C:\Users\ATM\.claude\projects\C--Users-ATM\` (sessions 1–4) and `...\c--Users-ATM-hrms-platform\` (session 5).
+- Raw session transcripts are kept locally by Claude Code and are not part of the repo.

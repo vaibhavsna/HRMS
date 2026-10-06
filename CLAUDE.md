@@ -57,7 +57,7 @@ Clean-room HRMS: React + Vite + TypeScript frontend, Node + Express + TypeScript
 - Every PR body must contain `Closes #<issue>`. Branch name uses the sprint and a short name: `feature/s1-login-endpoint`. Reference the issue in commit messages.
 - Move the issue's status as work progresses (Ready → In progress → In review); merging closes it. Out-of-scope findings become new issues, not extra changes in the PR.
 - `docs/07-sprint-execution.md` is the planning baseline. Update it in the same PR only when a ticket's scope, approach or "Done when" changes. Live status lives in GitHub, not in the doc.
-- The old sprint board artifact is superseded by the Project; do not keep updating it.
+- The sprint board artifact is a planning reference only (scope, order, done-when). Never record progress or status there; progress lives in the Project and issues.
 
 ## How to report
 End each task with: what changed (files), what you ran and the result, what is not done, and the branch/PR state. Reference files as `path:line`. If tests fail, show the failure, not a summary.

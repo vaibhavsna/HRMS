@@ -1,6 +1,6 @@
 # GitHub Workflow — Issues, Projects, PRs, Releases
 
-Replaces the sprint board artifact as the live tracker. There is no Jira; GitHub Issues + a GitHub Project (v2) give the same traceability.
+Replaces the sprint board artifact as the live tracker; the artifact stays as a planning reference only (scope, order, done-when), never for progress. There is no Jira; GitHub Issues + a GitHub Project (v2) give the same traceability.
 
 ## Where things live
 
@@ -58,4 +58,4 @@ When a release PR merges into `main`, `release-notify.yml` creates the GitHub Re
 1. Create labels and milestones.
 2. Create the Project and link it to the repo.
 3. Create one issue per ticket in `docs/07` using the ticket template, with the full overview, scope, approach, done-when, test plan and dependencies, then add them to the Project.
-4. Mark the sprint artifact as superseded and link the Project from it and from the README.
+4. Keep the sprint artifact as a planning reference: remove progress and status from it and link the Project and issues from it and from the README.
