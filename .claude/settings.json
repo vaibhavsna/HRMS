@@ -46,14 +46,17 @@
       "PowerShell(docker compose down -v*)",
       "PowerShell(docker compose down --volumes*)",
       "PowerShell(docker volume rm*)",
-      "PowerShell(docker system prune*)"
+      "PowerShell(docker system prune*)",
+      "Bash(gh pr merge*)",
+      "PowerShell(gh pr merge*)",
+      "Bash(gh api*merge*)",
+      "PowerShell(gh api*merge*)"
     ],
     "ask": [
       "Bash(git push*)",
       "Bash(git merge*)",
       "Bash(git rebase*)",
       "Bash(git tag*)",
-      "Bash(gh pr merge*)",
       "Bash(gh release*)",
       "Bash(gh api*)",
       "Bash(gh secret*)",
@@ -63,7 +66,6 @@
       "PowerShell(git merge*)",
       "PowerShell(git rebase*)",
       "PowerShell(git tag*)",
-      "PowerShell(gh pr merge*)",
       "PowerShell(gh release*)",
       "PowerShell(gh api*)",
       "PowerShell(gh secret*)",

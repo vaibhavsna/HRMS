@@ -77,9 +77,9 @@ Note: branch protection on private repos needs a paid GitHub plan. If unavailabl
 ## 8. Claude-specific guardrails
 
 - [CLAUDE.md](../CLAUDE.md) is loaded every session and defines the rules.
-- [.claude/settings.json](../.claude/settings.json) denies force pushes, hard resets, `git clean`, pushes to `main`/`dev`, recursive deletes, destructive Prisma and Docker commands, and reads of `.env` files. These are enforced by the tool, not by trust.
+- [.claude/settings.json](../.claude/settings.json) denies force pushes, hard resets, `git clean`, pushes to `main`/`dev`, PR merges (`gh pr merge` and the equivalent `gh api` routes), recursive deletes, destructive Prisma and Docker commands, and reads of `.env` files. These are enforced by the tool, not by trust.
 - Claude works only on `feature/*` branches, commits its work, and reports what it ran.
-- Claude never merges, tags, releases, or changes GitHub settings without being told to in that message.
+- Claude never merges pull requests: the owner merges every PR, and the merge commands are denied in `.claude/settings.json`. Claude never tags, releases, or changes GitHub settings without being told to in that message.
 - Claude proposes a plan and waits for approval before any cross-cutting change (new dependency, schema change to an existing table, folder restructure).
 
 ## 9. Definition of Done (every ticket)

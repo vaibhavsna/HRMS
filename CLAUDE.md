@@ -14,7 +14,8 @@ Clean-room HRMS: React + Vite + TypeScript frontend, Node + Express + TypeScript
 
 ## Never do without explicit user approval in that message
 - `git push --force`, `git reset --hard`, `git clean -f`, `git checkout -- .`, `git branch -D`, rebasing pushed branches, deleting tags or remote branches.
-- Pushing, merging, tagging, publishing a release, or changing GitHub settings/secrets.
+- Pushing, tagging, publishing a release, or changing GitHub settings/secrets.
+- Merging pull requests: never, even if asked mid-task. The owner merges every PR; `gh pr merge` and the equivalent `gh api` routes are denied in `.claude/settings.json`.
 - `prisma migrate reset`, `prisma db push --force-reset`, dropping tables/databases, deleting Docker volumes (`docker compose down -v`), or editing a migration that has already been merged.
 - Deleting or overwriting files you did not create in this task. Look at the target first.
 - Installing a new dependency, or upgrading a major version. State the package, why, and its size/maintenance status first.
