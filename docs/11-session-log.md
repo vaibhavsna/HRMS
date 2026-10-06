@@ -11,7 +11,7 @@ Sessions 1–4 are reconstructed from the saved transcripts. Session 5 is the cu
 | Goal | Rebuild a Horilla-style HRMS as a React + Node/Express + PostgreSQL monorepo. Clean-room: no Horilla code reused. |
 | Phases | Phase 1: Auth/RBAC, Employee, Leave. Phase 2: remaining 7 modules. |
 | Repo | https://github.com/vaibhavsna/HRMS (`main` and `dev` pushed; both at `e6595e2`) |
-| Stage | Sprint 0 (M0 repo scaffold). S0-3, S0-4, S0-5, S0-6 done locally (not pushed). Coding standards and model-selection docs written. |
+| Stage | Sprint 0 (M0 repo scaffold). S0-3, S0-3b, S0-4, S0-5, S0-6, S0-7, S0-8 done locally (not pushed). Coding standards and model-selection docs written. |
 | Not yet pushed | All feature branches below |
 | Blocked on you | `gh auth login` (needs `repo`, `project`, `workflow` scopes) |
 
@@ -64,7 +64,10 @@ Cloned Horilla separately to `C:\Users\ATM\horilla-hr-2` to see it run. Installe
 | S0-4 Postgres | `feature/s0-postgres` | `c9c0a08` | Healthcheck added. `docker compose up -d --wait` healthy, `psql` connects (PostgreSQL 16.15). Port 5432 was free. |
 | S0-5 Prisma schema | `feature/s0-prisma-schema` | `2f916c0` | 11 Phase 1 entities, first migration `init` applied; 11 tables created; `migrate diff` reports no drift; client generates. |
 | S0-6 Express skeleton | `feature/s0-express-skeleton` | `be22092` | Zod fail-fast env, helmet, CORS, pino with redaction, error envelope, `/health`. 7 tests pass; lint, format, typecheck, build clean. Server booted and `/health` returned ok; missing env exits 1 with a list. |
-| S0-7, S0-8, S0-9, S0-3b | not started | | |
+| S0-3b lint standards | `feature/s0-lint-standards` | `b540940` | Type-aware ESLint, no-floating-promises, Prisma import restricted to services, no-console. Verified failing on a deliberately bad file. |
+| S0-7 Vite skeleton | `feature/s0-vite-skeleton` | `0b653f0` | Vite 8, React 19, Vitest + RTL. Build, dev server and smoke test pass. |
+| S0-8 CI and automation | `feature/s0-ci-automation` | `c1022e0` | `ci.yml`, `claude-review.yml`, `release-notify.yml`. YAML parses and the CI steps pass locally; real proof needs a push and the API key secret. |
+| S0-9 UI foundation | not started | | Waiting for your component-library choice. |
 
 **Findings worth knowing**
 - TypeScript 7.x is the npm latest, but `typescript-eslint` only supports `<6.1`, so TypeScript is pinned to **6.0.3**.
@@ -83,6 +86,9 @@ main, dev ── e6595e2  initial docs and skeleton
  └─ feature/s0-root-tooling        be8c6dc
      └─ feature/s0-prisma-schema   2f916c0
          └─ feature/s0-express-skeleton   be22092
+             └─ feature/s0-lint-standards   b540940
+                 └─ feature/s0-vite-skeleton   0b653f0
+                     └─ feature/s0-ci-automation   c1022e0
 ```
 
 Later branches build on earlier ones, so PRs must merge in order: root-tooling, then prisma-schema, then express-skeleton. `feature/docs-github-workflow` still contains an older `CLAUDE.md` commit (`63d981d`) that the next commit supersedes; it can be squashed.
@@ -109,7 +115,7 @@ Later branches build on earlier ones, so PRs must merge in order: root-tooling, 
 **Claude, once `gh` works**
 1. Push the feature branches and open PRs into `dev` (S0-3, S0-4, S0-5, docs).
 2. Create labels, five milestones, the Project, and the issues for every ticket; show the first for review.
-3. Finish S0-3b (lint standards), S0-7 (Vite), S0-8 (CI, Claude review and release workflows), S0-9 (UI foundation).
+3. S0-9 (UI foundation) once you pick the component approach.
 4. Release PR `dev` to `main`, tag `v0.1.0`.
 
 ## Where things are
