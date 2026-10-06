@@ -21,6 +21,7 @@ Goal: every layer boots; nothing has business logic. Pre-conditions in [06-conve
 | S0-1 | Git + GitHub | `git init -b main`; set author; initial commit of docs and skeleton; create `dev`; add the GitHub remote (personal account); push both branches | `main` and `dev` visible on GitHub |
 | S0-2 | Branch protection | GitHub Settings → Branches, rules from guardrails §3 | Direct push to `main`/`dev` rejected |
 | S0-3 | Root tooling | Add ESLint (flat config), Prettier, `tsconfig.base.json`; root scripts `lint`, `typecheck`, `test`, `format`; add `.env.*` to `.gitignore`; pin versions | `npm install` and `npm run lint` pass at root |
+| S0-3b | Enforce coding standards in lint | Extend `eslint.config.mjs` per `docs/12` section 11: type-aware rules (`no-floating-promises`, `no-misused-promises`), `no-restricted-imports` (Prisma client only in services, seed and tests), `no-console` outside `src/index.ts`, complexity warnings | `npm run lint` passes; a Prisma import in a controller and a floating promise each fail lint |
 | S0-4 | Postgres | Use existing `docker-compose.yml`; check port 5432 is free first, else change the host port in compose and `.env.example` | `docker compose up -d` and a client connects |
 | S0-5 | Prisma schema | `backend`: add `prisma`, `@prisma/client`; model exactly the 11 entities in `02-database-schema.md` with UUID ids, audit columns, `deleted_at`, native enums, listed indexes and unique constraints | `prisma migrate dev --name init` succeeds; migration committed |
 | S0-6 | Express skeleton | `src/config/env.ts` (Zod, fail fast), `app.ts` + `index.ts`, `helmet`, CORS with credentials, JSON body, request-ID + `pino`, error handler producing the `03` error envelope, `GET /health`; `.env.example` | `npm run dev -w backend` serves `/health` → `{status:"ok"}`; missing env var exits with a clear message; first Vitest + Supertest test for `/health` |
@@ -89,6 +90,39 @@ Goal: request, approve/reject/cancel, balances stay correct.
 | S4-5 | Docs and ops | README run-from-scratch guide, env var table, deployment notes, backup/restore note | A new developer runs the stack from the README |
 
 ---
+
+## Model and work split per ticket
+
+Rules and reasoning are in [13-model-selection.md](./13-model-selection.md); standards are in [12-coding-standards.md](./12-coding-standards.md). "Plan/review Opus" means Opus 5.5 at `xhigh` plans and reviews, Sonnet 5.5 implements. A ticket's issue may override this and must say why.
+
+| Ticket | Model | Split | Standards focus (docs/12) |
+|---|---|---|---|
+| S0-1, S0-2 | Sonnet 5.5 (medium) | Single | 10 |
+| S0-3, S0-3b | Sonnet 5.5 (high) | Single | 1, 11 |
+| S0-4 | Sonnet 5.5 (medium) | Single | 7 |
+| S0-5 | Plan/review Opus | Single | 5 |
+| S0-6 | Sonnet 5.5 (high) | Single | 3, 4, 7 |
+| S0-7 | Sonnet 5.5 (high) | Single, parallel with S0-4/S0-8 | 9 |
+| S0-8 | Sonnet 5.5 (high) | Single, parallel | 11 |
+| S0-9 | Opus 5.5 (high) | Single; needs your approval | 9 |
+| S1-1 | Sonnet 5.5 (high) | `backend/prisma/seed.ts` | 5 |
+| S1-2, S1-3 | Opus 5.5 end to end (xhigh) | Single agent, `modules/auth` | 4, 7 |
+| S1-4 | Opus 5.5 end to end (xhigh) | Single, `middleware/`, `config/` | 7 |
+| S1-5 | Opus 5.5 end to end (xhigh) | Single, `middleware/` | 3, 4, 6 |
+| S1-6 | Sonnet 5.5 (high), reviewed by Opus | Agent A `modules/users`, agent B `modules/roles` after S1-5 | 3, 4, 5, 6 |
+| S1-7 | Sonnet 5.5 (high) | `backend/tests/` | 8 |
+| S2-0 | Opus 5.5 (high) | Single; needs your approval | 9 |
+| S2-1, S2-2 | Sonnet 5.5 (high), reviewed by Opus on scoping | Agent A departments and job positions, agent B employees | 3, 5, 6 |
+| S2-3 | Sonnet 5.5 (high) | Frontend only, parallel with S2-1/S2-2 once the contract is fixed | 9 |
+| S2-4, S2-5 | Sonnet 5.5 (high) | Frontend only | 9 |
+| S3-0 | Opus 5.5 (high) | Single; needs your approval | 9 |
+| S3-1 | Sonnet 5.5 (medium) | `modules/leave` types | 3, 6 |
+| S3-2, S3-3, S3-4 | Opus 5.5 end to end (xhigh) | Single agent, one set of invariants | 4, 5, 8 |
+| S3-5 | Sonnet 5.5 (high) | Frontend only, parallel with S3-1 | 9 |
+| S4-1, S4-2 | Opus 5.5 plan/review (xhigh) | Single, shared API client | 9 |
+| S4-3 | Opus 5.5 (xhigh) | Single | 8 |
+| S4-4, S4-5 | Sonnet 5.5 (high) | Two agents, no shared paths | 9, 10 |
+| Release PRs | Opus 5.5 review (xhigh) | CI | 12 |
 
 ## Open questions to settle before building
 

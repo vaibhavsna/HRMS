@@ -18,6 +18,9 @@ Read the docs in order:
 9. [docs/08-engineering-guardrails.md](./docs/08-engineering-guardrails.md) — branching, protection, and stability rules
 
 10. [docs/10-github-workflow.md](./docs/10-github-workflow.md) — GitHub Issues, Project board, PR linking, releases
+11. [docs/11-session-log.md](./docs/11-session-log.md) — combined log of every session so far
+12. [docs/12-coding-standards.md](./docs/12-coding-standards.md) — coding standards and review checklist
+13. [docs/13-model-selection.md](./docs/13-model-selection.md) — which model and effort per task, and how to split work across agents
 
 Working with Claude: rules are in [CLAUDE.md](./CLAUDE.md), with tool-level safety denies in `.claude/settings.json`.
 

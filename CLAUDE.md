@@ -43,6 +43,11 @@ Clean-room HRMS: React + Vite + TypeScript frontend, Node + Express + TypeScript
 - bcrypt cost 12; access token in memory only; refresh token in httpOnly cookie; never log tokens, passwords, or auth request bodies.
 - Money, dates, and leave-day math: use `Decimal` and date-only types, never floats or ad hoc timezone handling. Balance changes happen in a DB transaction.
 
+## Coding standards and model choice
+- Follow `docs/12-coding-standards.md` (layering, validation and errors, database, testing, frontend). It is the checklist your PR is reviewed against. Tooling enforces part of it; the rest you must check yourself.
+- Use the model and effort suggested on the ticket (`docs/13-model-selection.md`). Escalate one tier after the same check fails twice or when the work turns out to touch auth, money or data deletion, and say so in the PR. Do not downgrade a security-critical ticket to save cost.
+- When work is split across agents, each agent edits only its owned paths, in its own worktree and `feature/*` branch. Never edit another agent's files and never merge another agent's branch.
+
 ## Frontend rules
 - Follow the design foundation from the UI/UX tickets (tokens, component library, app shell). Do not invent per-screen styles. Every data screen needs loading, empty, and error states, keyboard access, and a phone-width layout.
 - Server state via TanStack Query; no secrets in the bundle; only `VITE_*` env vars.

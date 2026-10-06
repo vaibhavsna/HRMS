@@ -67,6 +67,34 @@ body:
       description: Tests to add and manual checks to run.
     validations:
       required: true
+  - type: dropdown
+    id: model
+    attributes:
+      label: Suggested model
+      description: See docs/13-model-selection.md section 3.
+      options:
+        - Haiku 4.5 (mechanical, read-only)
+        - Sonnet 5.5 (specified implementation)
+        - Opus 5.5 plan and review, Sonnet 5.5 implements
+        - Opus 5.5 end to end (security or data integrity)
+        - Fable 5.1 (escalation only)
+    validations:
+      required: true
+  - type: textarea
+    id: split
+    attributes:
+      label: Work split
+      description: Single agent, or the exact paths each agent owns (no path in two lists). See docs/13 section 6.
+      placeholder: "Single agent"
+    validations:
+      required: true
+  - type: textarea
+    id: standards
+    attributes:
+      label: Standards to watch
+      description: Sections of docs/12-coding-standards.md that matter most for this ticket (e.g. 4 validation and errors, 5 database).
+    validations:
+      required: false
   - type: textarea
     id: docs
     attributes:

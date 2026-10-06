@@ -15,6 +15,8 @@ Closes #
 - [ ] Targets `dev` (or `main` for a release/hotfix PR only)
 - [ ] One issue, branch named `feature/<sprint>-<name>`
 - [ ] Every "Done when" item on the issue is met
+- [ ] Follows `docs/12-coding-standards.md` (layering, validation, DB, tests)
+- [ ] Model used matches the ticket, or the PR says why it differs
 - [ ] Lint, typecheck, tests pass
 - [ ] Tests added for new logic / bug fix
 - [ ] Docs updated (schema, API, sprint doc) if behaviour changed
