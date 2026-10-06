@@ -1,7 +1,11 @@
 node_modules/
 dist/
 build/
+coverage/
 .env
+.env.*
+!.env.example
 *.local
 .DS_Store
 npm-debug.log*
+backend/src/generated/

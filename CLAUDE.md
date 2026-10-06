@@ -43,9 +43,21 @@ Clean-room HRMS: React + Vite + TypeScript frontend, Node + Express + TypeScript
 - bcrypt cost 12; access token in memory only; refresh token in httpOnly cookie; never log tokens, passwords, or auth request bodies.
 - Money, dates, and leave-day math: use `Decimal` and date-only types, never floats or ad hoc timezone handling. Balance changes happen in a DB transaction.
 
+## Coding standards and model choice
+- Follow `docs/12-coding-standards.md` (layering, validation and errors, database, testing, frontend). It is the checklist your PR is reviewed against. Tooling enforces part of it; the rest you must check yourself.
+- Use the model and effort suggested on the ticket (`docs/13-model-selection.md`). Escalate one tier after the same check fails twice or when the work turns out to touch auth, money or data deletion, and say so in the PR. Do not downgrade a security-critical ticket to save cost.
+- When work is split across agents, each agent edits only its owned paths, in its own worktree and `feature/*` branch. Never edit another agent's files and never merge another agent's branch.
+
 ## Frontend rules
 - Follow the design foundation from the UI/UX tickets (tokens, component library, app shell). Do not invent per-screen styles. Every data screen needs loading, empty, and error states, keyboard access, and a phone-width layout.
 - Server state via TanStack Query; no secrets in the bundle; only `VITE_*` env vars.
+
+## Issues, Project, and PRs (see `docs/10-github-workflow.md`)
+- Tickets are tracked as GitHub Issues in the "HRMS Roadmap" Project, grouped by Sprint milestone. Do not start work without an issue. If none exists, propose one using the *Sprint ticket* template and wait.
+- Every PR body must contain `Closes #<issue>`. Branch name uses the sprint and a short name: `feature/s1-login-endpoint`. Reference the issue in commit messages.
+- Move the issue's status as work progresses (Ready → In progress → In review); merging closes it. Out-of-scope findings become new issues, not extra changes in the PR.
+- `docs/07-sprint-execution.md` is the planning baseline. Update it in the same PR only when a ticket's scope, approach or "Done when" changes. Live status lives in GitHub, not in the doc.
+- The sprint board artifact is a planning reference only (scope, order, done-when). Never record progress or status there; progress lives in the Project and issues.
 
 ## How to report
 End each task with: what changed (files), what you ran and the result, what is not done, and the branch/PR state. Reference files as `path:line`. If tests fail, show the failure, not a summary.

@@ -1,0 +1,38 @@
+name: Bug report
+description: Something is broken or behaves differently from the spec
+title: "[Bug] "
+labels: ["type:bug"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+      description: Link the spec section if there is one.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+    validations:
+      required: true
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      options: ["Data loss or security", "Feature broken", "Minor or cosmetic"]
+    validations:
+      required: true
+  - type: input
+    id: env
+    attributes:
+      label: Branch or version
+      description: e.g. dev at commit abc123, or tag v0.2.0
+    validations:
+      required: false

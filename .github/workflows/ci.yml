@@ -1,0 +1,77 @@
+name: ci
+
+on:
+  pull_request:
+    branches: [dev, main]
+  push:
+    branches: [dev, main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  # Job id and name are `ci` so branch protection can require the status check "ci".
+  ci:
+    name: ci
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: hrms
+          POSTGRES_PASSWORD: hrms
+          POSTGRES_DB: hrms
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U hrms -d hrms"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://hrms:hrms@localhost:5432/hrms
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Prisma generate
+        run: npx prisma generate
+        working-directory: backend
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Format check
+        run: npm run format:check
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Apply migrations to the CI database
+        run: npx prisma migrate deploy
+        working-directory: backend
+
+      - name: Schema drift check (schema.prisma vs committed migrations)
+        run: npx prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --exit-code
+        working-directory: backend
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build -w backend -w frontend
