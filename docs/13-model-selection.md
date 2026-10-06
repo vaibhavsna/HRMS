@@ -78,7 +78,7 @@ For security-critical or data-integrity tickets: the plan and the final review a
 | Into `dev`, touching `backend/prisma/migrations/**`, `backend/src/modules/auth/**`, RBAC or `backend/src/middleware/**` | Opus 5.5 | xhigh |
 | Release PR `dev` to `main` | Opus 5.5 | xhigh |
 
-The review follows the checklist in [12-coding-standards.md](./12-coding-standards.md) section 12. Findings must name the file and line and say what breaks. The workflow chooses the model from the changed paths.
+The review follows the checklist in [12-coding-standards.md](./12-coding-standards.md) section 12. Findings must name the file and line and say what breaks. The workflow chooses the model from the changed paths. It sets the model only; the effort column is the intent, and is applied once the action exposes an effort setting.
 
 ## 6. Dividing work across agents
 
