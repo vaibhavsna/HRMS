@@ -1,0 +1,104 @@
+name: Sprint ticket
+description: A unit of sprint work (one ticket = one issue = one branch = one PR)
+title: "[S?-?] "
+labels: ["type:feature"]
+body:
+  - type: input
+    id: ticket
+    attributes:
+      label: Ticket ID
+      description: ID from docs/07-sprint-execution.md, e.g. S1-2
+    validations:
+      required: true
+  - type: dropdown
+    id: sprint
+    attributes:
+      label: Sprint
+      options: ["Sprint 0 (M0)", "Sprint 1 (M1)", "Sprint 2 (M2)", "Sprint 3 (M3)", "Sprint 4 (M4)"]
+    validations:
+      required: true
+  - type: textarea
+    id: overview
+    attributes:
+      label: Overview
+      description: What this delivers and why it matters, in plain language.
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope (what to do)
+      description: Concrete tasks as a checklist.
+      placeholder: "- [ ] ..."
+    validations:
+      required: true
+  - type: textarea
+    id: approach
+    attributes:
+      label: Approach (how)
+      description: Key technical decisions, files or modules touched, spec sections to follow.
+    validations:
+      required: true
+  - type: textarea
+    id: done
+    attributes:
+      label: Done when (acceptance criteria)
+      description: Observable, verifiable by running a command or opening a page.
+      placeholder: "- [ ] ..."
+    validations:
+      required: true
+  - type: textarea
+    id: out-of-scope
+    attributes:
+      label: Out of scope
+    validations:
+      required: false
+  - type: textarea
+    id: deps
+    attributes:
+      label: Dependencies and risks
+      description: Blocking tickets (#issue), schema or auth impact, data-loss risk.
+    validations:
+      required: false
+  - type: textarea
+    id: tests
+    attributes:
+      label: Test plan
+      description: Tests to add and manual checks to run.
+    validations:
+      required: true
+  - type: dropdown
+    id: model
+    attributes:
+      label: Suggested model
+      description: See docs/13-model-selection.md section 3.
+      options:
+        - Haiku 4.5 (mechanical, read-only)
+        - Sonnet 5.5 (specified implementation)
+        - Opus 5.5 plan and review, Sonnet 5.5 implements
+        - Opus 5.5 end to end (security or data integrity)
+        - Fable 5.1 (escalation only)
+    validations:
+      required: true
+  - type: textarea
+    id: split
+    attributes:
+      label: Work split
+      description: Single agent, or the exact paths each agent owns (no path in two lists). See docs/13 section 6.
+      placeholder: "Single agent"
+    validations:
+      required: true
+  - type: textarea
+    id: standards
+    attributes:
+      label: Standards to watch
+      description: Sections of docs/12-coding-standards.md that matter most for this ticket (e.g. 4 validation and errors, 5 database).
+    validations:
+      required: false
+  - type: textarea
+    id: docs
+    attributes:
+      label: Docs impact
+      description: Which docs change (schema, API spec, README), or "none".
+    validations:
+      required: false

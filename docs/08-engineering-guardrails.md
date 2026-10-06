@@ -38,9 +38,14 @@ For both `main` and `dev`:
 
 Note: branch protection on private repos needs a paid GitHub plan. If unavailable, the same rules are enforced by convention and by the Claude permission denies, and the repo should be made public or upgraded before real work starts.
 
+**Applied so far (S0-2, 2026-10-06; repo is public).** On `main` and `dev`: pull request required, force pushes and deletion blocked, conversation resolution required, rules apply to administrators. Not yet applied, because they cannot be met today:
+- *1 approval*: the repo has one owner and GitHub does not count an author's own approval, so the count is 0 until a second reviewer exists. Claude's CI review comments still must be resolved.
+- *Required check `ci` and up-to-date branch*: `ci` is created by S0-8 and cannot be required before it has run once. Add it right after S0-8 merges.
+- *`main` merge restricted to the owner*: GitHub offers push restrictions only on organisation repositories; on this personal repo it is enforced by convention.
+
 ## 4. Pull request rules
 
-- Title: `[S1-2] feat: login endpoint`. One ticket per PR, ideally under 400 changed lines.
+- Title: `[S1-2] feat: login endpoint`. One ticket per PR, ideally under 400 changed lines. The body links its issue with `Closes #<n>` (see [10-github-workflow.md](./10-github-workflow.md)).
 - The PR template ([.github/pull_request_template.md](../.github/pull_request_template.md)) must be filled in: what, why, how tested, risks, docs updated.
 - CI runs install, lint, typecheck, test, and `prisma migrate diff`. Red CI blocks merge, no exceptions.
 - Claude reviews every PR automatically and comments on correctness, security, data-loss risk, and missing tests. Fix or reply to every comment.
