@@ -2,6 +2,7 @@ import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import prettier from 'eslint-config-prettier';
 import globals from 'globals';
+import reactHooks from 'eslint-plugin-react-hooks';
 
 // Rules here implement docs/12-coding-standards.md section 11.
 export default tseslint.config(
@@ -38,7 +39,7 @@ export default tseslint.config(
 
   // Type-aware rules for backend source and tests.
   {
-    files: ['backend/**/*.ts'],
+    files: ['backend/**/*.ts', 'frontend/**/*.{ts,tsx}'],
     extends: [...tseslint.configs.recommendedTypeChecked],
     languageOptions: {
       parserOptions: {
@@ -52,6 +53,14 @@ export default tseslint.config(
       '@typescript-eslint/await-thenable': 'error',
       '@typescript-eslint/no-unnecessary-type-assertion': 'error',
     },
+  },
+
+  // React rules and browser globals for the frontend.
+  {
+    files: ['frontend/**/*.{ts,tsx}'],
+    plugins: { 'react-hooks': reactHooks },
+    languageOptions: { globals: globals.browser },
+    rules: reactHooks.configs.recommended.rules,
   },
 
   // Layering: Prisma Client only in services, seed scripts and tests (docs/12 section 3).
