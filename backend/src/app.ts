@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import type { IncomingMessage, ServerResponse } from 'node:http';
 import cors from 'cors';
 import express from 'express';
 import helmet from 'helmet';
@@ -30,8 +31,12 @@ export function createApp(env: Env) {
       },
       // Never log request bodies: auth routes carry passwords.
       serializers: {
-        req: (req) => ({ id: req.id, method: req.method, url: req.url }),
-        res: (res) => ({ statusCode: res.statusCode }),
+        req: (req: IncomingMessage & { id?: unknown }) => ({
+          id: req.id,
+          method: req.method,
+          url: req.url,
+        }),
+        res: (res: ServerResponse) => ({ statusCode: res.statusCode }),
       },
     }),
   );

@@ -14,6 +14,8 @@ const env = parseEnv({
   LOG_LEVEL: 'silent',
 });
 
+type ErrorBody = { error: { code: string } };
+
 describe('GET /health', () => {
   const app = createApp(env);
 
@@ -33,7 +35,7 @@ describe('GET /health', () => {
   it('returns the error envelope for unknown routes', async () => {
     const res = await request(app).get('/nope');
     expect(res.status).toBe(404);
-    expect(res.body.error.code).toBe('NOT_FOUND');
+    expect((res.body as ErrorBody).error.code).toBe('NOT_FOUND');
   });
 
   it('returns a validation error for malformed JSON', async () => {
@@ -42,6 +44,6 @@ describe('GET /health', () => {
       .set('content-type', 'application/json')
       .send('{bad');
     expect(res.status).toBe(400);
-    expect(res.body.error.code).toBe('VALIDATION_ERROR');
+    expect((res.body as ErrorBody).error.code).toBe('VALIDATION_ERROR');
   });
 });
