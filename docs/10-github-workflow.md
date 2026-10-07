@@ -19,7 +19,7 @@ Replaces the sprint board artifact as the live tracker; the artifact stays as a 
 2. Branch from `dev`: `feature/s1-login-endpoint` (sprint + short name). Move issue to **In progress**.
 3. Commits reference the issue: `feat: add login endpoint (#12)`.
 4. Open a PR into `dev`. Body has `Closes #12`. Issue moves to **In review**.
-5. CI green, Claude review comments resolved, user approves, squash merge. The issue closes and moves to **Done** automatically.
+5. CI green and review comments resolved, then merge: Claude merges ticket PRs into `dev` itself when the conditions in `CLAUDE.md` hold; the owner merges release PRs, hotfixes and PRs that change the rules. Squash, except a parent in a stack (merge commit). The issue closes and moves to **Done** automatically.
 
 One issue, one branch, one PR. Anything discovered mid-ticket becomes a new issue, not scope creep.
 
