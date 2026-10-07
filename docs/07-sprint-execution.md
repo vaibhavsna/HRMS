@@ -126,7 +126,7 @@ Rules and reasoning are in [13-model-selection.md](./13-model-selection.md); sta
 
 ## Open questions to settle before building
 
-1. Component library and visual direction (S0-9).
+1. ~~Component library and visual direction (S0-9).~~ Component library decided on 2026-10-06: Tailwind CSS + shadcn/ui, see [09-ui-foundation.md](./09-ui-foundation.md). The visual direction (palette, type, shell) is approved by the owner with the S0-9 pull request.
 2. Release notification channel: GitHub only, or also Slack/email.
 3. Repo visibility: public, or private on a plan that supports branch protection.
 4. Leave rules not in the spec: weekends and public holidays counting, negative balances, carry-forward expiry. Default for Phase 1: calendar days excluding weekends, no holidays, no negative balance; carry-forward applied by admin adjustment only.
