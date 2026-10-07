@@ -47,6 +47,17 @@ Supports multiple roles per user (e.g. an employee who is also a manager).
 | `user_id` | FK → User |
 | `role_id` | FK → Role |
 
+### RefreshToken
+One row per refresh token issued at login or rotation (added in Sprint 1, migration `add_refresh_tokens`). Only a keyed HMAC-SHA256 hash of the token is stored, never the token itself, so a leaked table cannot be replayed as cookies. Tokens that descend from one login share a `family_id`, so presenting a token that was already rotated can revoke the whole session.
+
+| Field | Type | Notes |
+|---|---|---|
+| `user_id` | FK → User | Indexed |
+| `family_id` | UUID | One per login; kept when a token is rotated. Indexed |
+| `token_hash` | text | HMAC-SHA256 of the token with `JWT_REFRESH_SECRET`. Unique |
+| `expires_at` | timestamptz | Login time plus `REFRESH_TOKEN_TTL` |
+| `revoked_at` | timestamptz, nullable | Set on rotation, logout or reuse detection |
+
 ### Employee
 The central entity most other modules (current and future) reference.
 
@@ -117,6 +128,7 @@ Unique constraint: `(employee_id, leave_type_id, year)`.
 ## Relationships (Phase 1)
 
 - `User` 1—1 `Employee`
+- `User` 1—N `RefreshToken`
 - `User` N—N `Role` (via `UserRole`), `Role` N—N `Permission` (via `RolePermission`)
 - `Department` 1—N `Employee`, `Department` 1—N `JobPosition`, `Department` 1—N `Department` (self, sub-departments)
 - `JobPosition` 1—N `Employee`
