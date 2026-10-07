@@ -25,7 +25,7 @@ feature/s1-login-endpoint ──PR──▶ dev (staging) ──release PR──
 - `feature/*`: one ticket each, branched from `dev`, short-lived, deleted after merge.
 - `hotfix/*`: branched from `main` for urgent fixes, merged to `main` and then back into `dev`.
 
-Merge strategy: squash merge into `dev` (one clean commit per ticket); merge commit for the release PR into `main` so sprint boundaries stay visible.
+Merge strategy: squash merge into `dev` (one clean commit per ticket); merge commit for the release PR into `main` so sprint boundaries stay visible. Stacked PRs (a ticket built on an unmerged one) are the exception: parents merge with a merge commit, because squashing a parent would conflict the next PR on `package-lock.json`; the child is then retargeted to `dev`.
 
 ## 3. GitHub branch protection (set in S0-2)
 
@@ -54,7 +54,7 @@ Note: branch protection on private repos needs a paid GitHub plan. If unavailabl
 
 1. Sprint ends with `dev` green and the sprint's Definition of Done met.
 2. Open a release PR `dev` → `main` titled `Release vX.Y.0 — Sprint N`. Body lists merged tickets.
-3. Claude reviews the full diff. User approves and merges.
+3. Claude reviews the full diff. User approves and merges, or tells Claude to merge in that message.
 4. Tag `vX.Y.0` on `main`. A GitHub Release is published with notes, and the user is notified.
 5. Confirm `dev` still equals or is ahead of `main`.
 
@@ -79,7 +79,7 @@ Note: branch protection on private repos needs a paid GitHub plan. If unavailabl
 - [CLAUDE.md](../CLAUDE.md) is loaded every session and defines the rules.
 - [.claude/settings.json](../.claude/settings.json) denies force pushes, hard resets, `git clean`, pushes to `main`/`dev`, recursive deletes, destructive Prisma and Docker commands, and reads of `.env` files. These are enforced by the tool, not by trust.
 - Claude works only on `feature/*` branches, commits its work, and reports what it ran.
-- Claude never merges, tags, releases, or changes GitHub settings without being told to in that message.
+- Claude merges ticket PRs into `dev` itself once the conditions in [CLAUDE.md](../CLAUDE.md) hold (green `ci`, linked issue, "Done when" met, no unapproved dependency). It never merges release PRs, hotfix PRs, or any PR that changes CLAUDE.md, `.claude/settings.json`, this document or branch protection: the owner does. It never tags, releases, or changes GitHub settings without being told to in that message.
 - Claude proposes a plan and waits for approval before any cross-cutting change (new dependency, schema change to an existing table, folder restructure).
 
 ## 9. Definition of Done (every ticket)
@@ -89,4 +89,4 @@ Note: branch protection on private repos needs a paid GitHub plan. If unavailabl
 - [ ] Tests added for new logic and bug fixes
 - [ ] Actually run and observed working (not just compiled)
 - [ ] Docs updated if behaviour, schema, or API changed
-- [ ] PR template complete, Claude review comments resolved, user approved
+- [ ] PR template complete, Claude review comments resolved, and the owner approved or the PR meets the self-merge conditions in CLAUDE.md

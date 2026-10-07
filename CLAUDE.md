@@ -14,10 +14,20 @@ Clean-room HRMS: React + Vite + TypeScript frontend, Node + Express + TypeScript
 
 ## Never do without explicit user approval in that message
 - `git push --force`, `git reset --hard`, `git clean -f`, `git checkout -- .`, `git branch -D`, rebasing pushed branches, deleting tags or remote branches.
-- Pushing, merging, tagging, publishing a release, or changing GitHub settings/secrets.
+- Pushing, tagging, publishing a release, or changing GitHub settings/secrets. (Merging has its own rule: see "Merging pull requests" below.)
 - `prisma migrate reset`, `prisma db push --force-reset`, dropping tables/databases, deleting Docker volumes (`docker compose down -v`), or editing a migration that has already been merged.
 - Deleting or overwriting files you did not create in this task. Look at the target first.
 - Installing a new dependency, or upgrading a major version. State the package, why, and its size/maintenance status first.
+
+## Merging pull requests
+Claude merges ticket PRs into `dev` itself, without asking, when all of these hold. If any does not, report what is missing and wait.
+1. The PR is from a `feature/*` branch into `dev` and its body links the issue with `Closes #<n>`.
+2. `ci` is green and GitHub reports the PR as mergeable. The `claude-review` check does not block while its app and key are not set up (issue #50); once they are, its blocking comments must be resolved.
+3. The ticket's "Done when" is met and does not call for the owner's approval (the design tickets S0-9, S2-0 and S3-0 are approved by the owner).
+4. The PR adds no dependency the owner has not approved, and no destructive migration.
+5. Stacked PRs follow the merge order in their bodies: parents first with a merge commit, then retarget the child to `dev` (no branch deletion). Otherwise squash.
+
+Claude does **not** merge these; the owner does (or says so in that message): release PRs (`dev` → `main`), `hotfix/*` PRs, and any PR that changes `CLAUDE.md`, `.claude/settings.json`, `docs/08-engineering-guardrails.md` or branch protection, so Claude can never widen its own permissions. After merging, confirm the issue closed, update the Project, and report what was merged and what `ci` showed.
 
 ## Protecting work
 - Before any risky or large change, make sure the working tree is committed (or ask). Never leave a task with uncommitted work: commit to the feature branch and tell the user.
