@@ -5,7 +5,7 @@ import { pino } from 'pino';
 import { pinoHttp } from 'pino-http';
 import request from 'supertest';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { PERMISSIONS, type RoleName } from '../../prisma/seed-data.js';
+import type { RoleName } from '../../prisma/seed-data.js';
 import { getEnv } from '../../src/config/env.js';
 import { signAccessToken } from '../../src/lib/tokens.js';
 import { getPrisma } from '../../src/lib/prisma.js';
@@ -14,6 +14,7 @@ import { errorHandler, notFoundHandler } from '../../src/middleware/error.js';
 import { TEST_JWT_ACCESS_SECRET } from '../test-env.js';
 import { resetDatabase } from '../helpers/db.js';
 import { createUser, seedRbac } from '../helpers/factories.js';
+import { permissionsOf } from '../helpers/rbac.js';
 
 /**
  * A small app with one route per guard, so the middleware is tested on its own with the real database.
@@ -70,11 +71,6 @@ function expiredTokenFor(userId: string): Promise<string> {
     .setExpirationTime(now - 60)
     .sign(new TextEncoder().encode(TEST_JWT_ACCESS_SECRET));
 }
-
-const permissionsOf = (...roles: RoleName[]) =>
-  PERMISSIONS.filter((p) => p.roles.some((role) => roles.includes(role)))
-    .map((p) => `${p.resource}:${p.action}`)
-    .sort();
 
 describe('authenticate and requirePermission', () => {
   beforeEach(async () => {
