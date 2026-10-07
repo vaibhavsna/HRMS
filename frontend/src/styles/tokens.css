@@ -1,0 +1,110 @@
+/*
+  Design tokens for the HRMS platform (S0-9). Source of truth for colour, radius and shell sizes.
+  Values are oklch. Every text/background pair below was checked against WCAG AA
+  (4.5:1 text, 3:1 for input borders and focus rings); the ratios are in docs/09-ui-foundation.md.
+  Components use these through Tailwind utilities (bg-primary, text-muted-foreground, ...), mapped in index.css.
+  Do not use raw colours, spacing or fonts in a screen; add or change a token here instead.
+*/
+
+:root {
+  /* Surfaces and text */
+  --background: oklch(0.985 0.004 215);
+  --foreground: oklch(0.2 0.02 235);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.2 0.02 235);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.2 0.02 235);
+  --muted: oklch(0.955 0.008 215);
+  --muted-foreground: oklch(0.47 0.02 235);
+
+  /* Brand and interaction */
+  --primary: oklch(0.46 0.095 192);
+  --primary-foreground: oklch(0.99 0.005 200);
+  --secondary: oklch(0.955 0.012 205);
+  --secondary-foreground: oklch(0.25 0.03 225);
+  --accent: oklch(0.94 0.03 192);
+  --accent-foreground: oklch(0.3 0.07 192);
+
+  /* Status colours: always pair with text or an icon, never colour alone */
+  --destructive: oklch(0.52 0.2 27);
+  --destructive-foreground: oklch(0.99 0 0);
+  --success: oklch(0.47 0.12 152);
+  --success-foreground: oklch(0.99 0 0);
+  --warning: oklch(0.52 0.12 70);
+  --warning-foreground: oklch(0.99 0 0);
+  --info: oklch(0.48 0.13 250);
+  --info-foreground: oklch(0.99 0 0);
+
+  /* Lines and focus. --input is the visible border of form controls (3:1); --border is decorative. */
+  --border: oklch(0.9 0.01 215);
+  --input: oklch(0.62 0.015 230);
+  --ring: oklch(0.55 0.12 192);
+
+  /* Charts (Phase 2 reports); categorical, distinguishable without relying on hue alone */
+  --chart-1: oklch(0.55 0.12 192);
+  --chart-2: oklch(0.65 0.14 70);
+  --chart-3: oklch(0.5 0.13 250);
+  --chart-4: oklch(0.6 0.17 15);
+  --chart-5: oklch(0.5 0.12 300);
+
+  /* App shell */
+  --sidebar: oklch(0.97 0.006 215);
+  --sidebar-foreground: oklch(0.2 0.02 235);
+  --sidebar-primary: oklch(0.46 0.095 192);
+  --sidebar-primary-foreground: oklch(0.99 0.005 200);
+  --sidebar-accent: oklch(0.94 0.03 192);
+  --sidebar-accent-foreground: oklch(0.3 0.07 192);
+  --sidebar-border: oklch(0.9 0.01 215);
+  --sidebar-ring: oklch(0.55 0.12 192);
+
+  /* Shape and size */
+  --radius: 0.5rem;
+  --sidebar-width: 15rem;
+  --topbar-height: 3.5rem;
+}
+
+.dark {
+  --background: oklch(0.17 0.015 235);
+  --foreground: oklch(0.96 0.006 215);
+  --card: oklch(0.21 0.017 235);
+  --card-foreground: oklch(0.96 0.006 215);
+  --popover: oklch(0.21 0.017 235);
+  --popover-foreground: oklch(0.96 0.006 215);
+  --muted: oklch(0.27 0.018 235);
+  --muted-foreground: oklch(0.72 0.02 225);
+
+  --primary: oklch(0.74 0.11 192);
+  --primary-foreground: oklch(0.2 0.03 215);
+  --secondary: oklch(0.27 0.02 235);
+  --secondary-foreground: oklch(0.96 0.006 215);
+  --accent: oklch(0.3 0.04 200);
+  --accent-foreground: oklch(0.93 0.03 195);
+
+  --destructive: oklch(0.7 0.17 22);
+  --destructive-foreground: oklch(0.2 0.03 22);
+  --success: oklch(0.74 0.14 152);
+  --success-foreground: oklch(0.2 0.04 152);
+  --warning: oklch(0.8 0.13 80);
+  --warning-foreground: oklch(0.22 0.04 80);
+  --info: oklch(0.74 0.12 250);
+  --info-foreground: oklch(0.2 0.04 250);
+
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(0.6 0.02 230);
+  --ring: oklch(0.7 0.11 192);
+
+  --chart-1: oklch(0.74 0.11 192);
+  --chart-2: oklch(0.8 0.13 80);
+  --chart-3: oklch(0.72 0.12 250);
+  --chart-4: oklch(0.72 0.15 15);
+  --chart-5: oklch(0.7 0.12 300);
+
+  --sidebar: oklch(0.2 0.016 235);
+  --sidebar-foreground: oklch(0.96 0.006 215);
+  --sidebar-primary: oklch(0.74 0.11 192);
+  --sidebar-primary-foreground: oklch(0.2 0.03 215);
+  --sidebar-accent: oklch(0.3 0.04 200);
+  --sidebar-accent-foreground: oklch(0.93 0.03 195);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.7 0.11 192);
+}
