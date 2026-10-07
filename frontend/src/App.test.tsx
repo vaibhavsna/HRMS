@@ -3,8 +3,10 @@ import { describe, expect, it } from 'vitest';
 import { App } from './App';
 
 describe('App', () => {
-  it('renders the placeholder heading', () => {
+  it('renders the UI foundation preview', () => {
     render(<App />);
-    expect(screen.getByRole('heading', { name: 'HRMS Platform' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'UI foundation preview' }),
+    ).toBeInTheDocument();
   });
 });

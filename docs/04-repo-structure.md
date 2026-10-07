@@ -31,8 +31,13 @@ hrms-platform/
 ├── frontend/
 │   ├── src/
 │   │   ├── features/                # one folder per module (auth, employees, leave, ...)
-│   │   ├── components/               # shared/presentational components
+│   │   ├── components/               # shared components (form-field, theme-toggle, ...)
+│   │   │   └── ui/                   # shadcn/ui primitives, copied in and owned by us (docs/09)
+│   │   ├── hooks/                    # shared React hooks
+│   │   ├── lib/                      # small helpers (cn, theme)
+│   │   ├── styles/                   # design tokens (tokens.css), see docs/09
 │   │   └── api/                      # typed API client, one file per resource
+│   ├── components.json               # shadcn/ui configuration
 │   ├── package.json
 │   ├── vite.config.ts                # created in the Phase 1 implementation task
 │   ├── .env.example
