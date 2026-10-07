@@ -34,6 +34,45 @@ describe('parseEnv', () => {
     },
   );
 
+  it('defaults the rate limits to 10 failed logins and 30 failed refreshes per 15 minutes, with no trusted proxy', () => {
+    const env = parseEnv(valid);
+    expect(env.RATE_LIMIT_WINDOW).toBe('15m');
+    expect(env.LOGIN_RATE_LIMIT_MAX).toBe(10);
+    expect(env.REFRESH_RATE_LIMIT_MAX).toBe(30);
+    expect(env.TRUST_PROXY_HOPS).toBe(0);
+  });
+
+  it('reads the rate limit settings from strings', () => {
+    const env = parseEnv({
+      ...valid,
+      RATE_LIMIT_WINDOW: '5m',
+      LOGIN_RATE_LIMIT_MAX: '3',
+      REFRESH_RATE_LIMIT_MAX: '7',
+      TRUST_PROXY_HOPS: '1',
+    });
+    expect(env).toMatchObject({
+      RATE_LIMIT_WINDOW: '5m',
+      LOGIN_RATE_LIMIT_MAX: 3,
+      REFRESH_RATE_LIMIT_MAX: 7,
+      TRUST_PROXY_HOPS: 1,
+    });
+  });
+
+  it.each([
+    ['RATE_LIMIT_WINDOW', ''],
+    ['RATE_LIMIT_WINDOW', '15'],
+    ['LOGIN_RATE_LIMIT_MAX', '0'],
+    ['LOGIN_RATE_LIMIT_MAX', '-1'],
+    ['LOGIN_RATE_LIMIT_MAX', '1.5'],
+    ['LOGIN_RATE_LIMIT_MAX', 'many'],
+    ['REFRESH_RATE_LIMIT_MAX', '0'],
+    ['TRUST_PROXY_HOPS', '-1'],
+    ['TRUST_PROXY_HOPS', '11'],
+    ['TRUST_PROXY_HOPS', 'true'],
+  ])('rejects %s=%s', (name, value) => {
+    expect(() => parseEnv({ ...valid, [name]: value })).toThrow(new RegExp(name));
+  });
+
   it('lists every missing or invalid variable in one error', () => {
     expect(() => parseEnv({ JWT_ACCESS_SECRET: 'short', CORS_ORIGIN: 'not-a-url' })).toThrow(
       /DATABASE_URL[\s\S]*JWT_ACCESS_SECRET[\s\S]*JWT_REFRESH_SECRET[\s\S]*CORS_ORIGIN/,

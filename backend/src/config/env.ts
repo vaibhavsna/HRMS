@@ -13,6 +13,12 @@ const envSchema = z.object({
   REFRESH_TOKEN_TTL: durationSchema,
   CORS_ORIGIN: z.url(),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
+  /** Failed logins or refreshes allowed per client address within the window before answering 429. */
+  RATE_LIMIT_WINDOW: durationSchema.default('15m'),
+  LOGIN_RATE_LIMIT_MAX: z.coerce.number().int().min(1).default(10),
+  REFRESH_RATE_LIMIT_MAX: z.coerce.number().int().min(1).default(30),
+  /** Reverse proxies in front of the API whose X-Forwarded-For is believed. 0 means none: use the socket address. */
+  TRUST_PROXY_HOPS: z.coerce.number().int().min(0).max(10).default(0),
 });
 
 export type Env = z.infer<typeof envSchema>;

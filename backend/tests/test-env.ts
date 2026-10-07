@@ -10,4 +10,7 @@ export const TEST_ENV = {
   REFRESH_TOKEN_TTL: '7d',
   CORS_ORIGIN: 'http://localhost:5173',
   LOG_LEVEL: 'silent',
+  // Generous, so the many failed logins in other tests never hit the limit. The rate limit tests pass their own.
+  LOGIN_RATE_LIMIT_MAX: '100000',
+  REFRESH_RATE_LIMIT_MAX: '100000',
 } as const;
