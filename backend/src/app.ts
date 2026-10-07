@@ -3,23 +3,26 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import cors from 'cors';
 import express from 'express';
 import helmet from 'helmet';
-import { pino } from 'pino';
+import type { DestinationStream } from 'pino';
 import { pinoHttp } from 'pino-http';
 import type { Env } from './config/env.js';
+import { createLogger } from './lib/logger.js';
 import { errorHandler, notFoundHandler } from './middleware/error.js';
 import { createAuthRouter } from './modules/auth/auth.routes.js';
 
-export function createApp(env: Env) {
-  const logger = pino({
-    level: env.LOG_LEVEL,
-    redact: {
-      paths: ['req.headers.authorization', 'req.headers.cookie', 'res.headers["set-cookie"]'],
-      censor: '[redacted]',
-    },
-  });
+export interface AppOptions {
+  /** Where logs go. Defaults to stdout; tests pass a stream to inspect what is logged. */
+  logDestination?: DestinationStream;
+}
+
+export function createApp(env: Env, options: AppOptions = {}) {
+  const logger = createLogger(env.LOG_LEVEL, options.logDestination);
 
   const app = express();
   app.disable('x-powered-by');
+  // Behind a reverse proxy the socket address is the proxy's, so per-client rate limits need its
+  // X-Forwarded-For. Believed only when the operator says how many proxies there are.
+  if (env.TRUST_PROXY_HOPS > 0) app.set('trust proxy', env.TRUST_PROXY_HOPS);
 
   app.use(
     pinoHttp({
@@ -50,7 +53,7 @@ export function createApp(env: Env) {
     res.json({ status: 'ok' });
   });
 
-  app.use('/api/v1/auth', createAuthRouter());
+  app.use('/api/v1/auth', createAuthRouter(env));
 
   app.use(notFoundHandler);
   app.use(errorHandler);
