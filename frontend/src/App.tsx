@@ -1,9 +1,6 @@
-// Placeholder page for M0. Real screens arrive after the UI foundation (S0-9) is approved.
+import { FoundationPreview } from './features/foundation-preview/FoundationPreview';
+
+// Temporary: shows the UI foundation (S0-9) for approval. S2-3 replaces this with the router and app shell.
 export function App() {
-  return (
-    <main>
-      <h1>HRMS Platform</h1>
-      <p>Frontend scaffold is running.</p>
-    </main>
-  );
+  return <FoundationPreview />;
 }
