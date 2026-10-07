@@ -54,6 +54,10 @@ describe('requirePermission', () => {
     expect(next).toHaveBeenCalledWith();
   });
 
+  it('carries the key it checks, so a test can list what every route asks for', () => {
+    expect(requirePermission('leave_request:approve').permission).toBe('leave_request:approve');
+  });
+
   it('throws FORBIDDEN when the user lacks it, without naming the permission', () => {
     const { call, next } = run('user:delete', principal(['user:read']));
 

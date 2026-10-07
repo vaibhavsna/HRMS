@@ -13,7 +13,7 @@ Built ticket by ticket following [../docs/07-sprint-execution.md](../docs/07-spr
 
 ## Seeding
 
-`npm run db:seed -w backend` (after `docker compose up -d` and `npm run prisma:deploy -w backend`) creates the four roles, the 30 permissions and the role grants from the permission appendix in [../docs/03-api-specification.md](../docs/03-api-specification.md). It is safe to run again: it only adds or confirms rows, never removes a grant, and changes nothing the second time.
+`npm run db:seed -w backend` (after `docker compose up -d` and `npm run prisma:deploy -w backend`) creates the four roles, the 30 permissions and the role grants from the permission appendix in [../docs/03-api-specification.md](../docs/03-api-specification.md). It is safe to run again: it only adds or confirms rows, never removes a grant (a grant removed from a role later stays removed), and changes nothing the second time except that a built-in role's description is put back to the seed text.
 
 To create the first admin, set `BOOTSTRAP_ADMIN_EMAIL` and `BOOTSTRAP_ADMIN_PASSWORD` in `backend/.env` (both, or neither). The password is stored as a bcrypt hash (cost 12). If an account with that email already exists it is left exactly as it is, including its password, so re-running the seed can never reset it.
 
@@ -26,4 +26,11 @@ The data lives in `prisma/seed-data.ts`; change it together with the appendix in
 - **unit** (`src/**/*.test.ts`, `prisma/**/*.test.ts`): pure logic, no database.
 - **integration** (`tests/**/*.test.ts`): endpoints through Supertest against a real PostgreSQL. Start it with `docker compose up -d`. Before the run, `tests/global-setup.ts` creates the database `hrms_test` if needed, empties it, and applies the migrations in `prisma/migrations`, so a run always starts from the committed schema. Set `TEST_DATABASE_URL` to use another server; its database name **must end in `_test`**, and the setup refuses anything else, so it can never touch the development database.
 
-`tests/helpers/` has `resetDatabase()`, `seedRbac()` (the real roles and permissions) and `createUser({ roles, isActive, deleted })` for writing a test in a few lines. Integration test files run one at a time because they share the database.
+`tests/helpers/` keeps a test to a few lines:
+
+- `resetDatabase()` and `seedRbac()` (the real roles and permissions) start each test from a known state.
+- `createUser({ roles, isActive, deleted })` makes a user; `createUserWithOnly('user:read', ...)` makes one whose only role grants exactly those permissions.
+- `apiAs(app, user)` sends requests as that user without logging in; `loginAs(app, user)` goes through the real login and returns the access token and refresh cookie; `accessTokenFor`, `roleId` and `permissionId` fetch the rest.
+- `collectLogs()` captures what the app logs; `listRoutes(app)` lists every route with what protects it (`tests/integration/rbac.matrix.test.ts` uses it).
+
+Integration test files run one at a time because they share the database. When you add a route, add it to the table at the top of `rbac.matrix.test.ts` in the same change: the test fails if the table and the app differ.

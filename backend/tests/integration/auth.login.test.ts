@@ -9,9 +9,9 @@ import { verifyAccessToken } from '../../src/lib/tokens.js';
 import { TEST_JWT_ACCESS_SECRET } from '../test-env.js';
 import { resetDatabase } from '../helpers/db.js';
 import { createUser, seedRbac } from '../helpers/factories.js';
+import { LOGIN, refreshCookie } from '../helpers/session.js';
 
 const app = createApp(getEnv());
-const LOGIN = '/api/v1/auth/login';
 
 interface LoginBody {
   data: { accessToken: string; user: Record<string, unknown> };
@@ -22,11 +22,6 @@ interface ErrorBody {
     message: string;
     details?: { fields?: { field: string; message: string }[] };
   };
-}
-
-function refreshCookie(setCookie: string | string[] | undefined): string {
-  const cookies = Array.isArray(setCookie) ? setCookie : setCookie ? [setCookie] : [];
-  return cookies.find((cookie) => cookie.startsWith('refresh_token=')) ?? '';
 }
 
 describe('POST /api/v1/auth/login', () => {
