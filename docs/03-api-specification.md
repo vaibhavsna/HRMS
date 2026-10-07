@@ -22,6 +22,8 @@ List (paginated):
 }
 ```
 
+A `POST` that creates a record answers `201 Created` with the new resource. A `POST` that performs an action (login, refresh, approve, assign roles) answers `200`, or `204` when there is nothing to return.
+
 ### Error envelope
 
 ```json
@@ -110,6 +112,16 @@ Rate-limited (see [01-architecture.md](./01-architecture.md#security--operationa
 | DELETE | `/users/:id` | `user:delete` | — | `204` (soft delete) |
 | POST | `/users/:id/roles` | `user:update` | `{ roleIds[] }` | `User` with resolved roles |
 
+**Users behaviour:**
+- `User` is `{ id, email, isActive, lastLoginAt, createdAt, updatedAt, roles: [{ id, name, description }] }`. A password or its hash is never returned.
+- `GET /users` takes `page`, `limit` (default 20, at most 100), `q` and `sort`. `q` matches part of the email in any case, and `%` and `_` in it are ordinary characters. `sort` is `email`, `created_at` or `last_login_at`, with a leading `-` for descending (default `-created_at`; accounts that never signed in come last for `last_login_at`). Deleted users are not listed.
+- `POST /users` answers `201`. The email is trimmed and lower-cased. The password needs at least 12 characters and at most 72 bytes (bcrypt ignores the rest). `roleIds` is required and may be empty; a role that does not exist or is deleted is `400` on `body.roleIds`. An email already in use, including the email of a deleted user, is `409`.
+- `PATCH /users/:id` needs at least one of `email`, `isActive`. Turning an account off ends all of its sessions, and it cannot be turned on again to bring an old session back. An access token issued earlier stops working at once, because the account is checked on every request.
+- `DELETE /users/:id` is a soft delete: the user disappears from the API, cannot sign in, and their sessions end. Their email stays reserved.
+- `POST /users/:id/roles` **sets** the user's roles: afterwards they hold exactly `roleIds` (an empty list removes them all). The new roles apply from the user's next request.
+- **There is always an active admin.** Turning off, deleting, or taking the `admin` role from the last active admin (active, not deleted, holding the `admin` role) is refused with `409 CONFLICT`, message `There must always be at least one active admin`. Concurrent requests cannot get around it.
+- An unknown or deleted user is `404`; an `:id` that is not a UUID is `400`.
+
 ## Roles
 
 | Method | Path | Required permission | Body | Response |
@@ -118,6 +130,14 @@ Rate-limited (see [01-architecture.md](./01-architecture.md#security--operationa
 | POST | `/roles` | `role:create` | `{ name, description?, permissionIds[] }` | `Role` |
 | PATCH | `/roles/:id` | `role:update` | `{ name?, description?, permissionIds[]? }` | `Role` |
 | DELETE | `/roles/:id` | `role:delete` | — | `204` |
+
+**Roles behaviour:**
+- `Role` is `{ id, name, description, permissions: [{ id, resource, action }], createdAt, updatedAt }`, with the permissions sorted by resource and action. `GET /roles` returns all roles ordered by name (unpaginated, as there are only a few).
+- `POST /roles` answers `201`. `name` is 2 to 50 characters: lower-case letters, digits and underscores, starting with a letter. `description` is at most 255 characters (default empty). `permissionIds` is required and may be empty; an id that does not exist is `400` on `body.permissionIds`. A name that is taken, including the name of a deleted role, is `409`.
+- `PATCH /roles/:id` needs at least one field. `permissionIds` **replaces** the role's permissions. The change applies to every holder of the role from their next request.
+- The four built-in roles (`admin`, `hr_manager`, `manager`, `employee`) are used by name in code and in the seed, so they cannot be renamed or deleted (`409`). Their description and permissions can change; running the seed again adds back any built-in grant that was removed.
+- `DELETE /roles/:id` is a soft delete. A role that is still assigned to a user (not deleted) is refused with `409` and `details.holders` giving how many.
+- There is no endpoint that lists every permission yet, so `permissionIds` can only be taken from roles that already have them.
 
 ## Employees
 
