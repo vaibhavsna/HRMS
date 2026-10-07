@@ -9,6 +9,8 @@ import type { Env } from './config/env.js';
 import { createLogger } from './lib/logger.js';
 import { errorHandler, notFoundHandler } from './middleware/error.js';
 import { createAuthRouter } from './modules/auth/auth.routes.js';
+import { createRolesRouter } from './modules/roles/roles.routes.js';
+import { createUsersRouter } from './modules/users/users.routes.js';
 
 export interface AppOptions {
   /** Where logs go. Defaults to stdout; tests pass a stream to inspect what is logged. */
@@ -54,6 +56,8 @@ export function createApp(env: Env, options: AppOptions = {}) {
   });
 
   app.use('/api/v1/auth', createAuthRouter(env));
+  app.use('/api/v1/users', createUsersRouter());
+  app.use('/api/v1/roles', createRolesRouter());
 
   app.use(notFoundHandler);
   app.use(errorHandler);
