@@ -2,7 +2,7 @@
 
 Express + TypeScript REST API, PostgreSQL via Prisma.
 
-Not yet implemented. See [../docs/01-architecture.md](../docs/01-architecture.md), [../docs/02-database-schema.md](../docs/02-database-schema.md), and [../docs/03-api-specification.md](../docs/03-api-specification.md) for what to build, and [../docs/05-roadmap.md](../docs/05-roadmap.md) for the Phase 1 milestone order (M0 repo scaffold → M1 Auth/RBAC → M2 Employee Management → M3 Leave Management → M4 integration polish).
+Built ticket by ticket following [../docs/07-sprint-execution.md](../docs/07-sprint-execution.md). See [../docs/01-architecture.md](../docs/01-architecture.md), [../docs/02-database-schema.md](../docs/02-database-schema.md), and [../docs/03-api-specification.md](../docs/03-api-specification.md) for what to build, and [../docs/05-roadmap.md](../docs/05-roadmap.md) for the Phase 1 milestone order (M0 repo scaffold → M1 Auth/RBAC → M2 Employee Management → M3 Leave Management → M4 integration polish).
 
 ## Folder layout
 
@@ -18,3 +18,12 @@ Not yet implemented. See [../docs/01-architecture.md](../docs/01-architecture.md
 To create the first admin, set `BOOTSTRAP_ADMIN_EMAIL` and `BOOTSTRAP_ADMIN_PASSWORD` in `backend/.env` (both, or neither). The password is stored as a bcrypt hash (cost 12). If an account with that email already exists it is left exactly as it is, including its password, so re-running the seed can never reset it.
 
 The data lives in `prisma/seed-data.ts`; change it together with the appendix in docs/03.
+
+## Tests
+
+`npm test -w backend` runs two sets (see `vitest.config.ts`):
+
+- **unit** (`src/**/*.test.ts`, `prisma/**/*.test.ts`): pure logic, no database.
+- **integration** (`tests/**/*.test.ts`): endpoints through Supertest against a real PostgreSQL. Start it with `docker compose up -d`. Before the run, `tests/global-setup.ts` creates the database `hrms_test` if needed, empties it, and applies the migrations in `prisma/migrations`, so a run always starts from the committed schema. Set `TEST_DATABASE_URL` to use another server; its database name **must end in `_test`**, and the setup refuses anything else, so it can never touch the development database.
+
+`tests/helpers/` has `resetDatabase()`, `seedRbac()` (the real roles and permissions) and `createUser({ roles, isActive, deleted })` for writing a test in a few lines. Integration test files run one at a time because they share the database.
