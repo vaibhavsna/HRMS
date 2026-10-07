@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { getEnv } from '../../config/env.js';
 import type { Prisma } from '../../generated/prisma/client.js';
+import { formatDateOnly } from '../../lib/dates.js';
 import { durationToMs } from '../../lib/duration.js';
 import { DUMMY_PASSWORD_HASH, verifyPassword } from '../../lib/password.js';
 import { getPrisma } from '../../lib/prisma.js';
@@ -35,10 +36,34 @@ export interface Principal {
   permissions: ReadonlySet<string>;
 }
 
+/** The employee fields the signed-in app needs. Personal details (birth date, phone, address) are left out. */
+export interface MeEmployee {
+  id: string;
+  employeeCode: string;
+  firstName: string;
+  lastName: string;
+  workEmail: string;
+  departmentId: string | null;
+  jobPositionId: string | null;
+  managerId: string | null;
+  dateJoined: string;
+  employmentStatus: string;
+}
+
+export interface Me {
+  user: AuthUser;
+  employee: MeEmployee | null;
+  roles: string[];
+  permissions: string[];
+}
+
 const NOT_DELETED = { deletedAt: null } as const;
 
 /** One message for every login failure, so the response never says which part was wrong. */
 const INVALID_CREDENTIALS = 'Invalid email or password';
+
+/** One message for every refresh failure: missing, unknown, expired, revoked or replayed. */
+const INVALID_REFRESH_TOKEN = 'Invalid or expired refresh token';
 
 /**
  * Creates the access token and a new refresh token row. `familyId` ties the refresh tokens of one
@@ -148,5 +173,131 @@ export async function login(input: LoginInput): Promise<LoginResult> {
       lastLoginAt,
       createdAt: found.createdAt,
     },
+  };
+}
+
+/** Revokes every live token of one session, so none of them can be refreshed again. */
+async function revokeFamily(familyId: string): Promise<void> {
+  await getPrisma().refreshToken.updateMany({
+    where: { familyId, revokedAt: null },
+    data: { revokedAt: new Date() },
+  });
+}
+
+const hashToken = (token: string): string => hashRefreshToken(token, getEnv().JWT_REFRESH_SECRET);
+
+/**
+ * Swaps a refresh token for a new access token and a new refresh token (rotation): the old one is revoked
+ * in the same transaction that creates the new one, and both belong to the same session (family).
+ * Presenting a token that was already used or revoked means it was copied, so the whole session is ended
+ * and the real owner has to log in again. Two requests racing with the same token end the same way:
+ * one wins, the other is treated as a replay. Every failure is the same 401.
+ */
+export async function refreshSession(refreshToken: string | null): Promise<SessionTokens> {
+  if (refreshToken === null) throw new AppError('UNAUTHENTICATED', INVALID_REFRESH_TOKEN);
+  const prisma = getPrisma();
+
+  const stored = await prisma.refreshToken.findUnique({
+    where: { tokenHash: hashToken(refreshToken) },
+    select: {
+      id: true,
+      userId: true,
+      familyId: true,
+      expiresAt: true,
+      revokedAt: true,
+      deletedAt: true,
+      user: { select: { isActive: true, deletedAt: true } },
+    },
+  });
+  if (!stored || stored.deletedAt) throw new AppError('UNAUTHENTICATED', INVALID_REFRESH_TOKEN);
+
+  if (stored.revokedAt) {
+    await revokeFamily(stored.familyId);
+    throw new AppError('UNAUTHENTICATED', INVALID_REFRESH_TOKEN);
+  }
+  if (stored.expiresAt <= new Date()) throw new AppError('UNAUTHENTICATED', INVALID_REFRESH_TOKEN);
+  if (!stored.user.isActive || stored.user.deletedAt) {
+    await revokeFamily(stored.familyId);
+    throw new AppError('UNAUTHENTICATED', INVALID_REFRESH_TOKEN);
+  }
+
+  const tokens = await prisma.$transaction(async (tx) => {
+    const claimed = await tx.refreshToken.updateMany({
+      where: { id: stored.id, revokedAt: null },
+      data: { revokedAt: new Date() },
+    });
+    if (claimed.count === 0) return null; // another request used this token first
+    return issueSessionTokens(tx, stored.userId, stored.familyId);
+  });
+  if (!tokens) {
+    await revokeFamily(stored.familyId);
+    throw new AppError('UNAUTHENTICATED', INVALID_REFRESH_TOKEN);
+  }
+  return tokens;
+}
+
+/**
+ * Ends the session the refresh token belongs to, so it cannot be refreshed again. Other sessions of the
+ * same user are not touched, and a token that belongs to someone else is ignored. Without a token there
+ * is nothing to revoke. The access token stays valid until it expires (it is not stored anywhere).
+ */
+export async function logout(userId: string, refreshToken: string | null): Promise<void> {
+  if (refreshToken === null) return;
+  const stored = await getPrisma().refreshToken.findUnique({
+    where: { tokenHash: hashToken(refreshToken) },
+    select: { userId: true, familyId: true },
+  });
+  if (stored?.userId === userId) await revokeFamily(stored.familyId);
+}
+
+/** The signed-in user's account, linked employee record (if any), roles and permissions. */
+export async function getMe(principal: Principal): Promise<Me> {
+  const found = await getPrisma().user.findFirst({
+    where: { id: principal.id, isActive: true, ...NOT_DELETED },
+    select: {
+      id: true,
+      email: true,
+      isActive: true,
+      lastLoginAt: true,
+      createdAt: true,
+      employee: {
+        select: {
+          id: true,
+          employeeCode: true,
+          firstName: true,
+          lastName: true,
+          workEmail: true,
+          departmentId: true,
+          jobPositionId: true,
+          managerId: true,
+          dateJoined: true,
+          employmentStatus: true,
+          deletedAt: true,
+        },
+      },
+    },
+  });
+  if (!found) throw new AppError('UNAUTHENTICATED', 'Invalid or expired access token');
+
+  const { employee, ...user } = found;
+  return {
+    user,
+    employee:
+      employee && !employee.deletedAt
+        ? {
+            id: employee.id,
+            employeeCode: employee.employeeCode,
+            firstName: employee.firstName,
+            lastName: employee.lastName,
+            workEmail: employee.workEmail,
+            departmentId: employee.departmentId,
+            jobPositionId: employee.jobPositionId,
+            managerId: employee.managerId,
+            dateJoined: formatDateOnly(employee.dateJoined),
+            employmentStatus: employee.employmentStatus,
+          }
+        : null,
+    roles: [...principal.roles].sort(),
+    permissions: [...principal.permissions].sort(),
   };
 }

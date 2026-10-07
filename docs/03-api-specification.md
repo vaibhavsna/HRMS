@@ -76,6 +76,23 @@ Rate-limited (see [01-architecture.md](./01-architecture.md#security--operationa
 - The refresh token is an opaque random value in the cookie `refresh_token`: `HttpOnly`, `SameSite=Strict`, `Path=/api/v1/auth`, `Secure` outside local development, `Max-Age` equal to `REFRESH_TOKEN_TTL`. It never appears in the response body.
 - Validation failures return `400 VALIDATION_ERROR` with `details.fields` as a list of `{ field, message }` (for example `body.email`). The message never repeats what the client sent.
 
+**Refresh behaviour** (`POST /auth/refresh`):
+- No access token is needed: the `refresh_token` cookie is the credential.
+- Success is `200 { data: { accessToken } }` plus a new `refresh_token` cookie with the same attributes as at login. The cookie that was sent is revoked in the same transaction (rotation), and the new one belongs to the same session.
+- Every failure is `401 UNAUTHENTICATED` with the message `Invalid or expired refresh token`, and the cookie is cleared. This covers: no cookie, an unknown value (including an access token), an expired token, a revoked token, and a user who is disabled or deleted.
+- **Replay detection.** Presenting a token that was already rotated or revoked means it was copied, so every refresh token of that session (that login) is revoked and the real owner has to log in again. The same applies to a disabled or deleted user. Two requests that use the same token at the same moment count as a replay: one succeeds, the other gets 401, and the session ends. Clients must therefore refresh from one place at a time.
+- Other sessions (other logins) of the same user, and other users, are not affected.
+
+**Logout behaviour** (`POST /auth/logout`):
+- Needs a valid access token. The response is `204` with no body, and the refresh cookie is cleared.
+- If the request carries the signed-in user's refresh cookie, that session is revoked on the server, so the token can no longer be refreshed. A refresh cookie that belongs to another user is ignored. Without a cookie the call still succeeds. The user's other sessions stay signed in.
+- Access tokens are not stored, so one that was already issued keeps working until it expires (`ACCESS_TOKEN_TTL`, 15 minutes by default). The client discards it.
+
+**Me behaviour** (`GET /auth/me`): needs an access token.
+- `user` has the same fields as in the login response.
+- `employee` is the linked employee record as `{ id, employeeCode, firstName, lastName, workEmail, departmentId, jobPositionId, managerId, dateJoined, employmentStatus }` (`dateJoined` as `YYYY-MM-DD`), or `null` when the user has no employee record or it is deleted. Birth date, phone, gender and address are not included.
+- `roles` are the role names and `permissions` the `resource:action` keys of all the user's roles, both sorted.
+
 ## Users
 
 | Method | Path | Required permission | Body | Response |
