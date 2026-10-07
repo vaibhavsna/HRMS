@@ -52,6 +52,9 @@ export function requireUser(req: Request): Principal {
 
 export type PermissionKey = `${string}:${string}`;
 
+/** The handler `requirePermission` returns. It carries its key so tests can list what every route asks for. */
+export type PermissionGuard = RequestHandler & { readonly permission: PermissionKey };
+
 const PERMISSION_KEY = /^[a-z][a-z_]*:[a-z][a-z_]*$/;
 
 /**
@@ -60,15 +63,16 @@ const PERMISSION_KEY = /^[a-z][a-z_]*:[a-z][a-z_]*$/;
  * only for permissions it was granted. A malformed key throws when the route is defined, so a typo
  * fails at startup instead of silently locking everyone out.
  */
-export function requirePermission(permission: PermissionKey): RequestHandler {
+export function requirePermission(permission: PermissionKey): PermissionGuard {
   if (!PERMISSION_KEY.test(permission)) {
     throw new Error(`Invalid permission key "${permission}": expected resource:action`);
   }
-  return (req, _res, next) => {
+  const guard: RequestHandler = (req, _res, next) => {
     const user = requireUser(req);
     if (!user.permissions.has(permission)) {
       throw new AppError('FORBIDDEN', 'You do not have permission to perform this action');
     }
     next();
   };
+  return Object.assign(guard, { permission });
 }
