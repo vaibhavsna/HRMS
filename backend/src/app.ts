@@ -7,6 +7,7 @@ import { pino } from 'pino';
 import { pinoHttp } from 'pino-http';
 import type { Env } from './config/env.js';
 import { errorHandler, notFoundHandler } from './middleware/error.js';
+import { createAuthRouter } from './modules/auth/auth.routes.js';
 
 export function createApp(env: Env) {
   const logger = pino({
@@ -48,6 +49,8 @@ export function createApp(env: Env) {
   app.get('/health', (_req, res) => {
     res.json({ status: 'ok' });
   });
+
+  app.use('/api/v1/auth', createAuthRouter());
 
   app.use(notFoundHandler);
   app.use(errorHandler);
