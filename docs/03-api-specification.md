@@ -36,6 +36,16 @@ List (paginated):
 
 Standard `code` values: `VALIDATION_ERROR` (400), `UNAUTHENTICATED` (401), `FORBIDDEN` (403), `NOT_FOUND` (404), `CONFLICT` (409), `INTERNAL_ERROR` (500).
 
+### Authentication and permission errors
+
+Every route except the public ones (`/health`, `/auth/login`, `/auth/refresh`) runs the `authenticate` guard, and every route with a "Required permission" runs `requirePermission`. Both answer in the error envelope:
+
+- No `Authorization` header, or one that is not `Bearer <token>`: `401 UNAUTHENTICATED`, message `Authentication required`.
+- A token that is invalid, expired, signed with another key, or belongs to an account that does not exist or is disabled or deleted: `401 UNAUTHENTICATED`, message `Invalid or expired access token`. The message is the same for all of these.
+- Signed in, but none of the user's roles holds the permission the route needs: `403 FORBIDDEN`, message `You do not have permission to perform this action`. The response does not name the permission.
+- The user's roles and permissions are read from the database on every request. Changing a role, or disabling or deleting an account, applies to the next request, not when the access token expires. A deleted role, grant or permission grants nothing.
+- No role is special. `admin` passes a permission check only for the permissions the appendix grants it.
+
 ### List query parameters
 
 - `page` (default `1`), `limit` (default `20`, max `100`)
