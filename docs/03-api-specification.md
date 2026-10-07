@@ -34,7 +34,7 @@ List (paginated):
 }
 ```
 
-Standard `code` values: `VALIDATION_ERROR` (400), `UNAUTHENTICATED` (401), `FORBIDDEN` (403), `NOT_FOUND` (404), `CONFLICT` (409), `INTERNAL_ERROR` (500).
+Standard `code` values: `VALIDATION_ERROR` (400), `UNAUTHENTICATED` (401), `FORBIDDEN` (403), `NOT_FOUND` (404), `CONFLICT` (409), `RATE_LIMITED` (429), `INTERNAL_ERROR` (500).
 
 ### Authentication and permission errors
 
@@ -61,6 +61,12 @@ Every route except the public ones (`/health`, `/auth/login`, `/auth/refresh`) r
 ## Auth
 
 Rate-limited (see [01-architecture.md](./01-architecture.md#security--operational-considerations)): `/auth/login` and `/auth/refresh` are the only unauthenticated routes and the ones credential-stuffing attempts would target.
+
+**Rate limit behaviour:**
+- Each client address may make a limited number of **failed** requests to each of the two routes within a window (defaults: 10 failed logins and 30 failed refreshes per 15 minutes; configurable, see `backend/.env.example`). A failed request is one answered with status 400 or above, including a body that fails validation. Successful requests are not counted.
+- The next request over the limit gets `429 RATE_LIMITED` in the error envelope (`Too many attempts. Try again later.`) with a `Retry-After` header in seconds and the `RateLimit` and `RateLimit-Policy` headers. While limited, even a correct password is refused and no session is started, and a refresh token that is presented is not used up.
+- Login and refresh have separate budgets. The routes that need an access token are not rate limited by this.
+- The client address is the socket address, or `X-Forwarded-For` when `TRUST_PROXY_HOPS` says a reverse proxy is in front. Counters are kept in memory per backend instance.
 
 | Method | Path | Auth | Body | Response |
 |---|---|---|---|---|
