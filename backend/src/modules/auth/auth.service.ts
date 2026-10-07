@@ -26,6 +26,17 @@ export interface LoginResult extends SessionTokens {
   user: AuthUser;
 }
 
+/** The signed-in user as the request guards see them: who they are and what they may do. */
+export interface Principal {
+  id: string;
+  email: string;
+  roles: readonly string[];
+  /** `resource:action` keys, the union over all of the user's roles. */
+  permissions: ReadonlySet<string>;
+}
+
+const NOT_DELETED = { deletedAt: null } as const;
+
 /** One message for every login failure, so the response never says which part was wrong. */
 const INVALID_CREDENTIALS = 'Invalid email or password';
 
@@ -56,6 +67,50 @@ export async function issueSessionTokens(
     ttl: env.ACCESS_TOKEN_TTL,
   });
   return { accessToken, refreshToken, refreshExpiresAt };
+}
+
+/**
+ * Loads a user with the permissions of their roles. Returns null when the account does not exist or is
+ * disabled or deleted, so a valid access token stops working as soon as the account does. A deleted role,
+ * grant or permission grants nothing. This runs on every authenticated request, so changing a role
+ * applies to the next request without waiting for the access token to expire.
+ */
+export async function getPrincipal(userId: string): Promise<Principal | null> {
+  const user = await getPrisma().user.findFirst({
+    where: { id: userId, isActive: true, ...NOT_DELETED },
+    select: {
+      id: true,
+      email: true,
+      roles: {
+        where: { ...NOT_DELETED, role: NOT_DELETED },
+        select: {
+          role: {
+            select: {
+              name: true,
+              permissions: {
+                where: { ...NOT_DELETED, permission: NOT_DELETED },
+                select: { permission: { select: { resource: true, action: true } } },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+  if (!user) return null;
+
+  const permissions = new Set<string>();
+  for (const { role } of user.roles) {
+    for (const { permission } of role.permissions) {
+      permissions.add(`${permission.resource}:${permission.action}`);
+    }
+  }
+  return {
+    id: user.id,
+    email: user.email,
+    roles: user.roles.map(({ role }) => role.name),
+    permissions,
+  };
 }
 
 /**
