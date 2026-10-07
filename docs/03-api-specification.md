@@ -59,6 +59,13 @@ Rate-limited (see [01-architecture.md](./01-architecture.md#security--operationa
 | POST | `/auth/logout` | access token | — | `204 No Content`, clears refresh cookie |
 | GET | `/auth/me` | access token | — | `{ data: { user, employee, roles, permissions } }` |
 
+**Login behaviour** (`POST /auth/login`):
+- `email` is trimmed and compared case-insensitively. `password` is required and at most 200 characters.
+- Unknown email, wrong password, a disabled account and a deleted account all return the same `401 UNAUTHENTICATED` with the message `Invalid email or password`. The password is always checked (against a dummy hash when there is no account) so response time does not reveal which case it was.
+- On success the body is `{ data: { accessToken, user } }` where `user` is `{ id, email, isActive, lastLoginAt, createdAt }`. The access token is a JWT (HS256) whose only identity claim is the user id (`sub`); roles and permissions are looked up on every request.
+- The refresh token is an opaque random value in the cookie `refresh_token`: `HttpOnly`, `SameSite=Strict`, `Path=/api/v1/auth`, `Secure` outside local development, `Max-Age` equal to `REFRESH_TOKEN_TTL`. It never appears in the response body.
+- Validation failures return `400 VALIDATION_ERROR` with `details.fields` as a list of `{ field, message }` (for example `body.email`). The message never repeats what the client sent.
+
 ## Users
 
 | Method | Path | Required permission | Body | Response |
