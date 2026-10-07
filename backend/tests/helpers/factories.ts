@@ -50,3 +50,34 @@ export async function createUser(options: TestUserOptions = {}): Promise<TestUse
   });
   return { id: user.id, email, password };
 }
+
+/**
+ * Creates a user whose only role grants exactly the given `resource:action` permissions, so a test can
+ * check that a route asks for its own permission and not a neighbouring one. Needs `seedRbac()` first.
+ */
+export async function createUserWithOnly(...keys: string[]): Promise<TestUser> {
+  counter += 1;
+  const prisma = getPrisma();
+  const permissions = await prisma.permission.findMany({
+    where: {
+      OR: keys.map((key) => {
+        const [resource = '', action = ''] = key.split(':');
+        return { resource, action };
+      }),
+    },
+    select: { id: true },
+  });
+  if (permissions.length !== keys.length)
+    throw new Error(`Unknown permission in ${keys.join(', ')}`);
+  const role = await prisma.role.create({
+    data: {
+      name: `only_${counter}`,
+      description: `Test role with ${keys.join(', ')}`,
+      permissions: { create: permissions.map(({ id }) => ({ permissionId: id })) },
+    },
+    select: { id: true },
+  });
+  const user = await createUser();
+  await prisma.userRole.create({ data: { userId: user.id, roleId: role.id } });
+  return user;
+}
